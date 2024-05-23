@@ -1,0 +1,6 @@
+AUTHENTICATED_PATH = ['']
+ADMIN_ROLE = ['']
+OWNER_ROLE = ['']
+USER_ROLE = ['']
+CHEF_ROLE = ['']
+OWNER_CHEF_ROLE = ['']
