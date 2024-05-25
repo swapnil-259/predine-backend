@@ -1,5 +1,5 @@
-AUTHENTICATED_PATH = ['']
-ADMIN_ROLE = ['']
+AUTHENTICATED_PATH = ['/Login/add_parent/', '/Login/add_child/']
+ADMIN_ROLE = ['/Login/add_parent/', '/Login/add_child/']
 OWNER_ROLE = ['']
 USER_ROLE = ['']
 CHEF_ROLE = ['']
