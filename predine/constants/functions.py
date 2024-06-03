@@ -36,53 +36,106 @@ def otp_expire(email, otp):
     print("otp-deleted")
 
 
-def validate(first_name, last_name, email, phone_number, restaurant_name, address, password, confirm_password, role, type, api_type):
+def validate(first_name=None, last_name=None, email=None, phone_number=None, restaurant_name=None, address=None, password=None, confirm_password=None, role=None, type=None, api_type=None, username=None):
     mobile_pattern = r'^[789]\d{9}$'
     email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    response = {'msg': '', 'status': False, 'other': False}
     match api_type:
         case "OWNER":
-
             if first_name.strip() == '' or first_name == None:
-                return JsonResponse({'msg': 'first name'+status_message.REQUIRED}, status=status_code.BAD_REQUEST)
+                response['msg'] = 'first name'
+                response['status'] = True
+                return response
             if last_name.strip() == '' or last_name == None:
-                return JsonResponse({'msg': 'last name'+status_message.REQUIRED}, status=status_code.BAD_REQUEST)
+                response['msg'] = 'last name'
+                response['status'] = True
+                return response
             if email.strip() == '' or email == None:
-                return JsonResponse({'msg': 'email'+status_message.REQUIRED}, status=status_code.BAD_REQUEST)
+                response['msg'] = 'email'
+                response['status'] = True
+                return response
             if phone_number.strip() == '' or phone_number == None:
-                return JsonResponse({'msg': 'phone number'+status_message.REQUIRED}, status=status_code.BAD_REQUEST)
+                response['msg'] = 'phone number'
+                response['status'] = True
+                return response
             if restaurant_name.strip() == '' or restaurant_name == None:
-                return JsonResponse({'msg': 'restaurant name'+status_message.REQUIRED}, status=status_code.BAD_REQUEST)
+                response['msg'] = 'restaurant name'
+                response['status'] = True
+                return response
             if address.strip() == '' or address == None:
-                return JsonResponse({'msg': 'address'+status_message.REQUIRED}, status=status_code.BAD_REQUEST)
+                response['msg'] = 'address'
+                response['status'] = True
+                return response
             if role.strip() == '' or role == None:
-                return JsonResponse({'msg': 'role'+status_message.REQUIRED}, status=status_code.BAD_REQUEST)
+                response['msg'] = 'role'
+                response['status'] = True
+                return response
             if type.strip() == '' or type == None:
-                return JsonResponse({'msg': 'owner type'+status_message.REQUIRED}, status=status_code.BAD_REQUEST)
+                response['msg'] = 'role'
+                response['status'] = True
+                return response
             if not re.match(mobile_pattern, phone_number):
                 return JsonResponse({'msg': status_message.NUMBER_INVALID}, status=status_code.BAD_REQUEST)
             if not re.match(email_pattern, email):
                 return JsonResponse({'msg': status_message.EMAIL_INVALID}, status=status_code.BAD_REQUEST)
         case "USER":
             if first_name.strip() == '' or first_name == None:
-                return JsonResponse({'msg': 'first name'+status_message.REQUIRED}, status=status_code.BAD_REQUEST)
+                response['msg'] = 'first name'
+                response['status'] = True
+                return response
             if last_name.strip() == '' or last_name == None:
-                return JsonResponse({'msg': 'last name'+status_message.REQUIRED}, status=status_code.BAD_REQUEST)
+                response['msg'] = 'last name'
+                response['status'] = True
+                return response
             if phone_number.strip() == '' or phone_number == None:
-                return JsonResponse({'msg': 'phone number'+status_message.REQUIRED}, status=status_code.BAD_REQUEST)
+                response['msg'] = 'phone number'
+                response['status'] = True
+                return response
             if password.strip() == '' or password == None:
-                return JsonResponse({'msg': 'phone number'+status_message.REQUIRED}, status=status_code.BAD_REQUEST)
+                response['msg'] = 'password'
+                response['status'] = True
+                return response
             if confirm_password.strip() == '' or confirm_password == None:
-                return JsonResponse({'msg': 'phone number'+status_message.REQUIRED}, status=status_code.BAD_REQUEST)
+                response['msg'] = 'confirm password'
+                response['status'] = True
+                return response
             if password != confirm_password:
-                return JsonResponse({'msg': status_message.PASSWORD_NOT_MATCH}, status=status_code.BAD_REQUEST)
+                response['msg'] = status_message.PASSWORD_NOT_MATCH
+                response['other'] = True
+                response['status'] = True
             if len(password) < 8:
-                return JsonResponse({'msg': status_message.PASSWORD_CHECK}, status=status_code.BAD_REQUEST)
+                response['msg'] = status_message.PASSWORD_CHECK
+                response['other'] = True
+                response['status'] = True
+                return response
             if not password.isalnum():
-                return JsonResponse({'msg': status_message.PASSWORD_CHECK}, status=status_code.BAD_REQUEST)
+                response['msg'] = status_message.PASSWORD_CHECK
+                response['other'] = True
+                response['status'] = True
+                return response
             if not re.match(mobile_pattern, phone_number):
-                return JsonResponse({'msg': status_message.NUMBER_INVALID}, status=status_code.BAD_REQUEST)
+                response['msg'] = status_message.NUMBER_INVALID
+                response['other'] = True
+                response['status'] = True
+                return response
             if not re.match(email_pattern, email):
-                return JsonResponse({'msg': status_message.EMAIL_INVALID}, status=status_code.BAD_REQUEST)
+                response['msg'] = status_message.EMAIL_INVALID
+                response['other'] = True
+                response['status'] = True
+                return response
         case "INITIAL REG":
             if not re.match(email_pattern, email):
-                return JsonResponse({'msg': status_message.EMAIL_INVALID}, status=status_code.BAD_REQUEST)
+                response['msg'] = status_message.EMAIL_INVALID
+                response['other'] = True
+                response['status'] = True
+                return response
+
+        case "LOGIN":
+            if username.strip() == '' or username == None or len(username) == 0:
+                response['msg'] = 'username'
+                response['status'] = True
+                return response
+            if password.strip() == '' or password == None:
+                response['msg'] = 'password'
+                response['status'] = True
+                return response

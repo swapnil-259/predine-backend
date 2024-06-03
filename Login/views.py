@@ -58,13 +58,19 @@ def login_user(request):
         data = json.loads(request.body)
         username = data.get('username')
         password = data.get('password')
+        validate_data = functions.validate(username=username,
+                                           password=password, api_type="LOGIN")
+        if validate_data is not None:
+            if validate_data['status'] == True and validate_data['other'] == False:
+                return JsonResponse({'msg': validate_data['msg']+' '+status_message.REQUIRED}, status=status_code.BAD_REQUEST)
+            elif validate_data['status'] == True and validate_data['other'] == True:
+                return JsonResponse({'msg': validate_data['msg']}, status=status_code.BAD_REQUEST)
+
         user = authenticate(username=username, password=password)
-        print(user)
         if user is not None:
             login(request, user)
             role = list(UserRole.objects.filter(
                 user=user).values('id', 'role_id__role_name'))
-            print(role[0]['role_id__role_name'])
             request.session['user'] = user.id
             request.session['role'] = role[0]['id']
             request.session['role_name'] = role[0]['role_id__role_name']
