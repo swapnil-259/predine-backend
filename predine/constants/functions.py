@@ -43,35 +43,35 @@ def validate(first_name=None, last_name=None, email=None, phone_number=None, res
     match api_type:
         case "OWNER":
             if first_name.strip() == '' or first_name == None:
-                response['msg'] = 'first name'
+                response['msg'] = 'First Name'
                 response['status'] = True
                 return response
             if last_name.strip() == '' or last_name == None:
-                response['msg'] = 'last name'
+                response['msg'] = 'Last Name'
                 response['status'] = True
                 return response
             if email.strip() == '' or email == None:
-                response['msg'] = 'email'
+                response['msg'] = 'Email'
                 response['status'] = True
                 return response
             if phone_number.strip() == '' or phone_number == None:
-                response['msg'] = 'phone number'
+                response['msg'] = 'Phone Number'
                 response['status'] = True
                 return response
             if restaurant_name.strip() == '' or restaurant_name == None:
-                response['msg'] = 'restaurant name'
+                response['msg'] = 'Restaurant Name'
                 response['status'] = True
                 return response
             if address.strip() == '' or address == None:
-                response['msg'] = 'address'
+                response['msg'] = 'Address'
                 response['status'] = True
                 return response
             if role.strip() == '' or role == None:
-                response['msg'] = 'role'
+                response['msg'] = 'Role'
                 response['status'] = True
                 return response
             if type.strip() == '' or type == None:
-                response['msg'] = 'role'
+                response['msg'] = 'Type'
                 response['status'] = True
                 return response
             if not re.match(mobile_pattern, phone_number):
@@ -80,23 +80,23 @@ def validate(first_name=None, last_name=None, email=None, phone_number=None, res
                 return JsonResponse({'msg': status_message.EMAIL_INVALID}, status=status_code.BAD_REQUEST)
         case "USER":
             if first_name.strip() == '' or first_name == None:
-                response['msg'] = 'first name'
+                response['msg'] = 'First Name'
                 response['status'] = True
                 return response
             if last_name.strip() == '' or last_name == None:
-                response['msg'] = 'last name'
+                response['msg'] = 'Last Name'
                 response['status'] = True
                 return response
             if phone_number.strip() == '' or phone_number == None:
-                response['msg'] = 'phone number'
+                response['msg'] = 'Phone Number'
                 response['status'] = True
                 return response
             if password.strip() == '' or password == None:
-                response['msg'] = 'password'
+                response['msg'] = 'Password'
                 response['status'] = True
                 return response
             if confirm_password.strip() == '' or confirm_password == None:
-                response['msg'] = 'confirm password'
+                response['msg'] = 'Confirm Password'
                 response['status'] = True
                 return response
             if password != confirm_password:
@@ -132,10 +132,10 @@ def validate(first_name=None, last_name=None, email=None, phone_number=None, res
 
         case "LOGIN":
             if username.strip() == '' or username == None or len(username) == 0:
-                response['msg'] = 'username'
+                response['msg'] = 'Email'
                 response['status'] = True
                 return response
             if password.strip() == '' or password == None:
-                response['msg'] = 'password'
+                response['msg'] = 'Password'
                 response['status'] = True
                 return response

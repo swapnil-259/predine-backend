@@ -74,7 +74,7 @@ def login_user(request):
             request.session['user'] = user.id
             request.session['role'] = role[0]['id']
             request.session['role_name'] = role[0]['role_id__role_name']
-            return JsonResponse({"msg": status_message.SUCCESS})
+            return JsonResponse({"msg": status_message.LOGIN})
         else:
             return JsonResponse({"msg": status_message.WRONG_CREDENTIALS}, status=status_code.BAD_REQUEST)
     else:

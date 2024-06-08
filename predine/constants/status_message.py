@@ -1,5 +1,6 @@
 BAD_REQUEST = 'Bad Request'
 SUCCESS = 'Success'
+LOGIN = 'Login Successfully!!'
 UNAUTHENTICATED = 'Not Authenticated'
 FORBIDDEN = 'Not Allowed'
 WRONG_CREDENTIALS = 'Wrong Credentials'
