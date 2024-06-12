@@ -10,6 +10,7 @@ import re
 
 
 def verification_email(email, otp):
+    print(otp, email)
 
     context = {
         'otp': otp,
@@ -21,14 +22,15 @@ def verification_email(email, otp):
     from_email = secret.EMAIL_USER
     recipient_list = [email]
     mail = send_mail(subject, message, from_email,
-                     recipient_list == recipient_list, html_message=html_message)
+                     recipient_list=recipient_list, html_message=html_message)
     print("mail", mail)
     if mail:
         return True
+    else:
+        return False
 
 
 def otp_expire(email, otp):
-    print(otp)
     time.sleep(120)
 
     OTPDetails.objects.filter(
@@ -36,7 +38,7 @@ def otp_expire(email, otp):
     print("otp-deleted")
 
 
-def validate(first_name=None, last_name=None, email=None, phone_number=None, restaurant_name=None, address=None, password=None, confirm_password=None, role=None, type=None, api_type=None, username=None):
+def validate(first_name=None, last_name=None, email=None, phone_number=None, restaurant_name=None, address=None, password=None, confirm_password=None, role=None, type=None, api_type=None, username=None, otp=None):
     mobile_pattern = r'^[789]\d{9}$'
     email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     response = {'msg': '', 'status': False, 'other': False}
@@ -124,6 +126,12 @@ def validate(first_name=None, last_name=None, email=None, phone_number=None, res
                 response['status'] = True
                 return response
         case "INITIAL REG":
+            print("emmm", email)
+            if email == '' or email == None or len(email) == 0:
+                response['msg'] = 'Email'
+                response['status'] = True
+                return response
+
             if not re.match(email_pattern, email):
                 response['msg'] = status_message.EMAIL_INVALID
                 response['other'] = True
@@ -137,5 +145,14 @@ def validate(first_name=None, last_name=None, email=None, phone_number=None, res
                 return response
             if password.strip() == '' or password == None:
                 response['msg'] = 'Password'
+                response['status'] = True
+                return response
+        case "OTP":
+            if otp == '' or otp == None or len(otp) == 0:
+                response['msg'] = 'OTP'
+                response['status'] = True
+                return response
+            if email == '' or email == None or len(email) == 0:
+                response['msg'] = 'Email'
                 response['status'] = True
                 return response

@@ -14,3 +14,4 @@ REQUIRED = "is required field"
 NUMBER_INVALID = 'Invalid Phone Number'
 EMAIL_INVALID = 'Invalid Email'
 PASSWORD_CHECK = "Password must be at least 8 characters long and contain both letters and numbers (alphanumeric)"
+EMAIL_ALREADY_VERIFIED = "Your emai has already verified, kindly go to login or continue the registration process."
