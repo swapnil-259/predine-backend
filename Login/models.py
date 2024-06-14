@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AbstractUser
 
 
 class BaseModel(models.Model):
@@ -10,6 +10,10 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
+
+
+class User(AbstractUser):
+    phone_number = models.PositiveBigIntegerField(null=False)
 
 
 class Dropdown(BaseModel):

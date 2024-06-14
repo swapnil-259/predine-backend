@@ -97,7 +97,7 @@ def user_registration(request):
         password = data.get('password')
         confirm_password = data.get('confirm_password')
         validate_data = functions.validate(first_name=first_name, last_name=last_name, email=email, phone_number=phone_number,
-                                           role=role, api_type="OWNER", password=password)
+                                           api_type="USER", password=password, confirm_password=confirm_password)
         if validate_data is not None:
             if validate_data['status'] == True and validate_data['other'] == False:
                 return JsonResponse({'msg': validate_data['msg']+' '+status_message.REQUIRED}, status=status_code.BAD_REQUEST)
@@ -124,7 +124,7 @@ def user_registration(request):
         else:
             return JsonResponse({"msg": status_code.BAD_REQUEST}, status=status_message.BAD_REQUEST)
         if role:
-            return JsonResponse({"msg": status_message.VERIFY_EMAIL})
+            return JsonResponse({"msg": status_message.REGISTERED})
         else:
             return JsonResponse({"msg": status_message.BAD_REQUEST}, status=status_code.BAD_REQUEST)
     else:
@@ -230,3 +230,8 @@ def check_email_verification(request):
 
     else:
         return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+
+
+def check_auth(request):
+    if request_handlers.request_type(request, 'GET'):
+        return JsonResponse({'msg': 'Welcome to Predine'}, status=status_code.SUCCESS)

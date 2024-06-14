@@ -11,6 +11,7 @@ OTP_INVALID = 'The OTP verification failed'
 PASSWORD_NOT_MATCH = 'Password and confirm password should be same'
 EMAIL_NOT_VERIFIED = 'Your Email is not Verified!'
 REQUIRED = "is required field"
+REGISTERED = "Registration successful!!"
 NUMBER_INVALID = 'Invalid Phone Number'
 EMAIL_INVALID = 'Invalid Email'
 PASSWORD_CHECK = "Password must be at least 8 characters long and contain both letters and numbers (alphanumeric)"
