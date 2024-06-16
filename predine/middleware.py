@@ -11,11 +11,11 @@ def authentication(get_response):
             if request.user.is_authenticated:
                 print(request.session['role'], request.session['role_name'])
                 response = get_response(request)
-                # role_res = check_role(req_path, request.session['role_name'])
+                role_res = check_role(req_path, request.session['role_name'])
 
-                # if role_res:
-                return response
-                # return JsonResponse({"msg": status_message.FORBIDDEN}, status=status_code.FORBIDDEN)
+                if role_res:
+                    return response
+                return JsonResponse({"msg": status_message.FORBIDDEN}, status=status_code.FORBIDDEN)
             else:
                 return JsonResponse({"msg": status_message.UNAUTHENTICATED}, status=status_code.UNAUTHENTICATED)
         else:
