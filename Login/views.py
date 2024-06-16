@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import OwnerDetails, User, UserRole, Roles, OTPDetails, Dropdown
+from .models import OwnerDetails, User, UserRole, Roles, OTPDetails, LeftPanel
 import json
 from django.http import JsonResponse
 from predine.constants import request_handlers, status_code, status_message, functions
@@ -8,55 +8,6 @@ import random
 import threading
 import secret
 from django.utils import timezone
-
-
-def owner_registration(request):
-    if request_handlers.request_type(request, 'POST'):
-        data = json.loads(request.body)
-        first_name = data.get('first_name')
-        last_name = data.get('last_name')
-        email = data.get('email')
-        phone_number = data.get('phone_number')
-        restaurant_name = data.get('restaurant_name')
-        address = data.get('address')
-        type = data.get('type')
-        role = data.get('role')
-        validate_data = functions.validate(first_name=first_name, last_name=last_name, email=email, phone_number=phone_number,
-                                           restaurant_name=restaurant_name, address=address, role=role, type=type, api_type="OWNER")
-        if validate_data is not None:
-            if validate_data['status'] == True and validate_data['other'] == False:
-                return JsonResponse({'msg': validate_data['msg']+' '+status_message.REQUIRED}, status=status_code.BAD_REQUEST)
-            elif validate_data['status'] == True and validate_data['other'] == True:
-                return JsonResponse({'msg': validate_data['msg']}, status=status_code.BAD_REQUEST)
-
-        user = User.objects.create_user(
-            first_name=first_name,
-            last_name=last_name,
-            email=email,
-            phone_number=phone_number,
-            password=secret.OWNER_PASS
-        )
-
-        if user:
-            role = UserRole.objects.create(
-                role=Roles.objects.get(id=role, deleted_status=False),
-                user=user
-            )
-
-            owner = OwnerDetails.objects.create(
-                restaurant_name=restaurant_name,
-                address=address,
-                type=Dropdown.objects.get(
-                    id=type, deleted_status=False, child=1)
-            )
-        else:
-            return JsonResponse({"msg": status_code.BAD_REQUEST}, status=status_message.BAD_REQUEST)
-        if owner:
-            return JsonResponse({"msg": status_message.SUCCESS})
-        else:
-            return JsonResponse({"msg": status_message.BAD_REQUEST}, status=status_code.BAD_REQUEST)
-    else:
-        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
 
 
 def login_user(request):
@@ -76,9 +27,10 @@ def login_user(request):
         if user is not None:
             login(request, user)
             role = list(UserRole.objects.filter(
-                user=user).values('id', 'role_id__role_name'))
+                user=user).values('role_id', 'role_id__role_name'))
+            print(role)
             request.session['user'] = user.id
-            request.session['role'] = role[0]['id']
+            request.session['role'] = role[0]['role_id']
             request.session['role_name'] = role[0]['role_id__role_name']
             return JsonResponse({"msg": status_message.LOGIN})
         else:
@@ -105,6 +57,10 @@ def user_registration(request):
                 return JsonResponse({'msg': validate_data['msg']}, status=status_code.BAD_REQUEST)
         if confirm_password != password:
             return JsonResponse({'msg': status_message.PASSWORD_NOT_MATCH}, status=status_code.BAD_REQUEST)
+
+        if UserRole.objects.filter(user_id__email=email, role_id__role_name='USER').exists():
+            return JsonResponse({'msg': status_message.USER_ALREADY_REGISTERED}, status=status_code.BAD_REQUEST)
+
         if OTPDetails.objects.filter(email=email, verified_status=True).exists() is False:
             return JsonResponse({'msg': status_message.EMAIL_NOT_VERIFIED}, status=status_code.BAD_REQUEST)
 
@@ -223,6 +179,10 @@ def check_email_verification(request):
                 return JsonResponse({'msg': validate_data['msg']+' '+status_message.REQUIRED}, status=status_code.BAD_REQUEST)
             elif validate_data['status'] == True and validate_data['other'] == True:
                 return JsonResponse({'msg': validate_data['msg']}, status=status_code.BAD_REQUEST)
+
+        if UserRole.objects.filter(user_id__email=email, role_id__role_name='USER').exists():
+            return JsonResponse({'msg': status_message.USER_ALREADY_REGISTERED}, status=status_code.BAD_REQUEST)
+
         if OTPDetails.objects.filter(email=email, verified_status=True).exists():
             return JsonResponse({'msg': status_message.SUCCESS}, status=status_code.SUCCESS)
         else:
@@ -235,3 +195,15 @@ def check_email_verification(request):
 def check_auth(request):
     if request_handlers.request_type(request, 'GET'):
         return JsonResponse({'msg': 'Welcome to Predine'}, status=status_code.SUCCESS)
+
+
+def left_panel(request):
+    if request_handlers.request_type(request, 'GET'):
+        print("role", request.session['role'])
+        panel_data = LeftPanel.objects.filter(role=request.session['role'], deleted_status=False, child=None).values(
+            'name', 'component', 'icon', 'order', 'icon_type'
+        )
+        print(panel_data)
+        return JsonResponse({'data': list(panel_data)}, status=status_code.SUCCESS)
+    else:
+        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
