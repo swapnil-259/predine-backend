@@ -84,7 +84,6 @@ def get_res_type(request):
         data = Dropdown.objects.filter(
             child=Dropdown.objects.filter(parent="RESTAURANT TYPE").first()
         ).values('parent', 'id')
-
         transformed_data = [{'label': item['parent'],
                              'value': item['id']} for item in data]
 
@@ -93,11 +92,46 @@ def get_res_type(request):
         return JsonResponse({'data': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
 
 
-def view_owners(request):
+def owner_list(request):
     if request_handlers.request_type(request, 'GET'):
         restaurant_data = OwnerDetails.objects.filter(deleted_status=False).values(
-            'id', 'restaurant_name', 'restaurant_type__parent', 'address', 'owner_id', 'owner__first_name', 'owner__last_name', 'owner__phone_number', 'owner__email')
+            'id', 'restaurant_name', 'restaurant_type__parent')
         print(restaurant_data)
         return JsonResponse({'data': list(restaurant_data)}, status=status_code.SUCCESS)
+    else:
+        return JsonResponse({'data': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+
+
+def view_owners(request):
+    print(request.GET.get('id'))
+    if request_handlers.request_type(request, 'GET'):
+        owner_id = request.GET.get('id')
+        if not owner_id:
+            return JsonResponse({'data': 'ID parameter is missing'}, status=status_code.BAD_REQUEST)
+
+        restaurant_data = OwnerDetails.objects.filter(deleted_status=False, id=owner_id).values(
+            'id', 'restaurant_name', 'restaurant_type__parent', 'address',
+            'owner__first_name', 'owner__last_name', 'owner__email', 'owner__phone_number'
+        ).first()
+
+        if not restaurant_data:
+            return JsonResponse({'data': 'No data found'}, status=status_code.NOT_FOUND)
+
+        formatted_data = [
+            {'label': 'Restaurant Name',
+                'value': restaurant_data['restaurant_name']},
+            {'label': 'Restaurant Type',
+                'value': restaurant_data['restaurant_type__parent']},
+            {'label': 'Address', 'value': restaurant_data['address']},
+            {'label': 'Owner First Name',
+                'value': restaurant_data['owner__first_name']},
+            {'label': 'Owner Last Name',
+                'value': restaurant_data['owner__last_name']},
+            {'label': 'Owner Email', 'value': restaurant_data['owner__email']},
+            {'label': 'Owner Phone Number',
+                'value': restaurant_data['owner__phone_number']},
+        ]
+
+        return JsonResponse({'data': formatted_data}, status=status_code.SUCCESS)
     else:
         return JsonResponse({'data': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
