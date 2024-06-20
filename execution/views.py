@@ -123,12 +123,12 @@ def view_owners(request):
             {'label': 'Restaurant Type',
                 'value': restaurant_data['restaurant_type__parent']},
             {'label': 'Address', 'value': restaurant_data['address']},
-            {'label': 'Owner First Name',
+            {'label': 'First Name',
                 'value': restaurant_data['owner__first_name']},
-            {'label': 'Owner Last Name',
+            {'label': 'Last Name',
                 'value': restaurant_data['owner__last_name']},
-            {'label': 'Owner Email', 'value': restaurant_data['owner__email']},
-            {'label': 'Owner Phone Number',
+            {'label': 'Email', 'value': restaurant_data['owner__email']},
+            {'label': 'Phone Number',
                 'value': restaurant_data['owner__phone_number']},
         ]
 
