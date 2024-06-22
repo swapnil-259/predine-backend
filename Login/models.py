@@ -14,6 +14,8 @@ class BaseModel(models.Model):
 
 class User(AbstractUser):
     phone_number = models.PositiveBigIntegerField(null=False)
+    deleted_status = models.BooleanField(default=False)
+    deleted_time = models.DateTimeField(null=True)
 
 
 class Dropdown(BaseModel):
@@ -21,13 +23,6 @@ class Dropdown(BaseModel):
     child = models.ForeignKey('DropDown', on_delete=models.SET_NULL, null=True)
     can_edit = models.BooleanField(default=False)
     added_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-
-
-class OwnerDetails(BaseModel):
-    owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    restaurant_name = models.CharField(max_length=50, null=False)
-    address = models.TextField(null=False)
-    type = models.ForeignKey(Dropdown, on_delete=models.SET_NULL, null=True)
 
 
 class Roles(BaseModel):

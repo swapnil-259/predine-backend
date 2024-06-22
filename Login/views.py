@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import OwnerDetails, User, UserRole, Roles, OTPDetails, LeftPanel
+from .models import User, UserRole, Roles, OTPDetails, LeftPanel
 import json
 from django.http import JsonResponse
 from predine.constants import request_handlers, status_code, status_message, functions

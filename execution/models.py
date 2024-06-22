@@ -1,5 +1,5 @@
 from django.db import models
-from Login.models import BaseModel, Dropdown, User
+from Login.models import BaseModel, Dropdown, User, Roles
 
 
 class OwnerDetails(BaseModel):
@@ -9,3 +9,4 @@ class OwnerDetails(BaseModel):
     address = models.TextField(null=False)
     restaurant_type = models.ForeignKey(
         Dropdown, on_delete=models.SET_NULL, null=True, related_name='Owner_Restaurant')
+    owner_role = models.ForeignKey(Roles, on_delete=models.SET_NULL, null=True)
