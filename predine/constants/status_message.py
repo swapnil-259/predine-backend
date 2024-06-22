@@ -18,3 +18,4 @@ PASSWORD_CHECK = "Password must be at least 8 characters long and contain both l
 EMAIL_ALREADY_VERIFIED = "Your emai has already verified, kindly go to login or continue the registration process."
 INVALID_DATA = 'Invalid data has provided'
 USER_ALREADY_REGISTERED = 'User has been already registered, kindly logged in!'
+USER_NOT_FOUND = 'User not found'
