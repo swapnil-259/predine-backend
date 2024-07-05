@@ -201,7 +201,7 @@ def left_panel(request):
     if request_handlers.request_type(request, 'GET'):
         print("role", request.session['role'])
         panel_data = LeftPanel.objects.filter(role=request.session['role'], deleted_status=False, child=None).values(
-            'name', 'component', 'icon', 'order', 'icon_type'
+            'name', 'component', 'icon', 'order', 'icon_type', 'title'
         )
         print(panel_data)
         return JsonResponse({'data': list(panel_data)}, status=status_code.SUCCESS)
