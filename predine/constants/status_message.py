@@ -19,3 +19,6 @@ EMAIL_ALREADY_VERIFIED = "Your emai has already verified, kindly go to login or 
 INVALID_DATA = 'Invalid data has provided'
 USER_ALREADY_REGISTERED = 'User has been already registered, kindly logged in!'
 USER_NOT_FOUND = 'User not found'
+PARENT_NOT_FOUND = 'Parent not found'
+PARENT_NOT_EDITED = 'Parent not edited'
+CHILD_ADDED = 'Child added successfully'
