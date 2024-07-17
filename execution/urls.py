@@ -9,4 +9,5 @@ urlpatterns = [
     path('view_owners/', views.view_owners),
     path('parent_list/', views.parent_list),
     path('add_child/', views.add_child),
+    path('get_child/', views.get_child)
 ]
