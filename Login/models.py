@@ -49,3 +49,4 @@ class LeftPanel(BaseModel):
     order = models.PositiveIntegerField(default=0)
     role = models.ForeignKey(Roles, on_delete=models.SET_NULL, null=True)
     icon_type = models.CharField(null=True, max_length=100)
+    title = models.CharField(null=True, max_length=100)

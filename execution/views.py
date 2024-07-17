@@ -37,8 +37,10 @@ def owner_registration(request):
 
         if user:
             print(role, type)
+            dd_exist = Dropdown.objects.filter(
+                id=role, deleted_status=False, child=1).first()
             role_exist = Roles.objects.filter(
-                id=role, deleted_status=False).first()
+                role_name=dd_exist.parent, deleted_status=False).first()
             type_exist = Dropdown.objects.filter(
                 id=type, deleted_status=False, child_id__parent="RESTAURANT TYPE").first()
             if role_exist is None:
@@ -54,7 +56,8 @@ def owner_registration(request):
                 owner=user,
                 restaurant_name=restaurant_name,
                 address=address,
-                restaurant_type=type_exist
+                restaurant_type=type_exist,
+                owner_role=role_exist
             )
 
         else:
@@ -90,7 +93,6 @@ def owner_registration(request):
             owner.address = address
             owner.save()
             user = owner.owner
-            print(user)
             user.first_name = first_name
             user.last_name = last_name
             user.phone_number = phone_number
@@ -193,9 +195,60 @@ def view_owners(request):
             {'label': 'Phone Number',
                 'value': str(restaurant_data['owner__phone_number']), 'can_edit': True, 'key': 'phone_number'},
             {'label': 'Owner Role',
-                'value': restaurant_data['owner_role__role_name'], 'can_edit': False, 'key': 'role'},
+                'value': str(restaurant_data['owner_role__role_name']), 'can_edit': False, 'key': 'role'},
         ]
 
         return JsonResponse({'data': formatted_data}, status=status_code.SUCCESS)
     else:
         return JsonResponse({'data': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+
+
+def parent_list(request):
+
+    if request_handlers.request_type(request, 'GET'):
+        data = Dropdown.objects.filter(
+            child=None, can_edit=True).values('parent', 'id')
+        transformed_data = [{'label': item['parent'],
+                             'value': item['id']} for item in data]
+        return JsonResponse({'data': transformed_data}, status=status_code.SUCCESS)
+    else:
+        return JsonResponse({'data': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+
+
+def add_child(request):
+    if request_handlers.request_type(request, 'POST'):
+        data = json.loads(request.body)
+        parent = data.get('parent')
+        child = data.get('child')
+        validate_data = functions.validate(
+            parent=parent, child=child, api_type="ADD CHILD")
+        if validate_data is not None:
+            if validate_data['status']:
+                return JsonResponse({'msg': validate_data['msg']}, status=status_code.BAD_REQUEST)
+        parent_exist = Dropdown.objects.filter(
+            id=parent, child=None).first()
+        if parent_exist is None:
+            return JsonResponse({'msg': status_message.PARENT_NOT_FOUND}, status=status_code.BAD_REQUEST)
+        if parent_exist.can_edit is False:
+            return JsonResponse({'msg': status_message.PARENT_NOT_EDITED}, status=status_code.BAD_REQUEST)
+        Dropdown.objects.create(
+            parent=child, child=parent_exist, can_edit=False, added_by=request.user)
+        return JsonResponse({'msg': status_message.CHILD_ADDED}, status=status_code.SUCCESS)
+    else:
+        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+
+
+def get_child(request):
+    if request_handlers.request_type(request, 'GET'):
+        parent = request.GET.get('parent')
+        if not parent:
+            return JsonResponse({'msg': status_message.PARENT_NOT_FOUND}, status=status_code.BAD_REQUEST)
+        parent_exist = Dropdown.objects.filter(
+            id=parent, child=None).first()
+        if parent_exist is None:
+            return JsonResponse({'msg': status_message.PARENT_NOT_FOUND}, status=status_code.BAD_REQUEST)
+        child_data = Dropdown.objects.filter(
+            child=Dropdown.objects.filter(id=parent).first()).values('parent', 'id')
+        transformed_data = [{'label': item['parent'],
+                             'value': item['id']} for item in child_data]
+        return JsonResponse({'data': transformed_data}, status=status_code.SUCCESS)

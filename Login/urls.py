@@ -10,5 +10,6 @@ urlpatterns = [
     path('resend_otp/', views.resend_otp),
     path('check_email_verf/', views.check_email_verification),
     path('check_auth/', views.check_auth),
-    path('left_panel/', views.left_panel)
+    path('left_panel/', views.left_panel),
+    path('logout/', views.logout_user),
 ]

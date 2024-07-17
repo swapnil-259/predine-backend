@@ -3,7 +3,7 @@ from .models import User, UserRole, Roles, OTPDetails, LeftPanel
 import json
 from django.http import JsonResponse
 from predine.constants import request_handlers, status_code, status_message, functions
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, logout
 import random
 import threading
 import secret
@@ -201,9 +201,16 @@ def left_panel(request):
     if request_handlers.request_type(request, 'GET'):
         print("role", request.session['role'])
         panel_data = LeftPanel.objects.filter(role=request.session['role'], deleted_status=False, child=None).values(
-            'name', 'component', 'icon', 'order', 'icon_type'
+            'name', 'component', 'icon', 'order', 'icon_type', 'title'
         )
         print(panel_data)
         return JsonResponse({'data': list(panel_data)}, status=status_code.SUCCESS)
     else:
         return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+
+
+def logout_user(request):
+    if request_handlers.request_type(request, 'GET'):
+        request.session.flush()
+        logout(request)
+        return JsonResponse({'msg': status_message.LOGOUT})
