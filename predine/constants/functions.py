@@ -165,3 +165,11 @@ def validate(first_name=None, last_name=None, email=None, phone_number=None, res
                 response['msg'] = 'Email'
                 response['status'] = True
                 return response
+
+
+def get_restaurant_img(self, filename):
+    return "RES_{0}/{1}".format(self.restaurant_name, filename)
+
+
+def get_dish_img(self, filename):
+    return "DISH_{0}/{1}".format(self.name, filename)

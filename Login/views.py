@@ -32,6 +32,14 @@ def login_user(request):
             request.session['user'] = user.id
             request.session['role'] = role[0]['role_id']
             request.session['role_name'] = role[0]['role_id__role_name']
+
+            check_email_verified = OTPDetails.objects.filter(
+                email=username).order_by('-id').first()
+            if check_email_verified is not None:
+                if check_email_verified.verified_status is False:
+                    return JsonResponse({'msg': status_message.EMAIL_NOT_VERIFIED}, status=status_code.BAD_REQUEST)
+            else:
+                return JsonResponse({'msg': status_message.EMAIL_NOT_VERIFIED}, status=status_code.BAD_REQUEST)
             return JsonResponse({"msg": status_message.LOGIN})
         else:
             return JsonResponse({"msg": status_message.WRONG_CREDENTIALS}, status=status_code.BAD_REQUEST)
@@ -214,3 +222,5 @@ def logout_user(request):
         request.session.flush()
         logout(request)
         return JsonResponse({'msg': status_message.LOGOUT})
+    else:
+        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)

@@ -1,5 +1,6 @@
 from django.db import models
 from Login.models import BaseModel, Dropdown, User, Roles
+from predine.constants import functions
 
 
 class OwnerDetails(BaseModel):
@@ -10,3 +11,5 @@ class OwnerDetails(BaseModel):
     restaurant_type = models.ForeignKey(
         Dropdown, on_delete=models.SET_NULL, null=True, related_name='Owner_Restaurant')
     owner_role = models.ForeignKey(Roles, on_delete=models.SET_NULL, null=True)
+    restaurant_pic = models.ImageField(
+        upload_to=functions.get_restaurant_img, null=True)
