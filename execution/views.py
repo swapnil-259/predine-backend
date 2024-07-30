@@ -1,5 +1,5 @@
 from .models import OwnerDetails, User, Dropdown
-from Login.models import UserRole, Roles
+from Login.models import UserRole, Roles, RoleDropdownMapping
 import json
 from django.http import JsonResponse
 from predine.constants import request_handlers, status_code, status_message, functions
@@ -171,7 +171,7 @@ def view_owners(request):
 
         restaurant_data = OwnerDetails.objects.filter(deleted_status=False, id=owner_id).values(
             'id', 'restaurant_name', 'restaurant_type__parent', 'address',
-            'owner__first_name', 'owner__last_name', 'owner__email', 'owner__phone_number', 'owner_role__role_name'
+            'owner__first_name', 'owner__last_name', 'owner__email', 'owner__phone_number', 'owner_role__role_name', 'restaurant_pic'
         ).first()
 
         if not restaurant_data:
@@ -196,59 +196,11 @@ def view_owners(request):
                 'value': str(restaurant_data['owner__phone_number']), 'can_edit': True, 'key': 'phone_number'},
             {'label': 'Owner Role',
                 'value': str(restaurant_data['owner_role__role_name']), 'can_edit': False, 'key': 'role'},
+            {'label': 'Restaurant Image',
+                'value': str(restaurant_data['restaurant_pic']), 'can_edit': True, 'key': 'img'},
         ]
 
         return JsonResponse({'data': formatted_data}, status=status_code.SUCCESS)
     else:
         return JsonResponse({'data': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
-
-
-def parent_list(request):
-
-    if request_handlers.request_type(request, 'GET'):
-        data = Dropdown.objects.filter(
-            child=None, can_edit=True).values('parent', 'id')
-        transformed_data = [{'label': item['parent'],
-                             'value': item['id']} for item in data]
-        return JsonResponse({'data': transformed_data}, status=status_code.SUCCESS)
-    else:
-        return JsonResponse({'data': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
-
-
-def add_child(request):
-    if request_handlers.request_type(request, 'POST'):
-        data = json.loads(request.body)
-        parent = data.get('parent')
-        child = data.get('child')
-        validate_data = functions.validate(
-            parent=parent, child=child, api_type="ADD CHILD")
-        if validate_data is not None:
-            if validate_data['status']:
-                return JsonResponse({'msg': validate_data['msg']}, status=status_code.BAD_REQUEST)
-        parent_exist = Dropdown.objects.filter(
-            id=parent, child=None).first()
-        if parent_exist is None:
-            return JsonResponse({'msg': status_message.PARENT_NOT_FOUND}, status=status_code.BAD_REQUEST)
-        if parent_exist.can_edit is False:
-            return JsonResponse({'msg': status_message.PARENT_NOT_EDITED}, status=status_code.BAD_REQUEST)
-        Dropdown.objects.create(
-            parent=child, child=parent_exist, can_edit=False, added_by=request.user)
-        return JsonResponse({'msg': status_message.CHILD_ADDED}, status=status_code.SUCCESS)
-    else:
-        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
-
-
-def get_child(request):
-    if request_handlers.request_type(request, 'GET'):
-        parent = request.GET.get('parent')
-        if not parent:
-            return JsonResponse({'msg': status_message.PARENT_NOT_FOUND}, status=status_code.BAD_REQUEST)
-        parent_exist = Dropdown.objects.filter(
-            id=parent, child=None).first()
-        if parent_exist is None:
-            return JsonResponse({'msg': status_message.PARENT_NOT_FOUND}, status=status_code.BAD_REQUEST)
-        child_data = Dropdown.objects.filter(
-            child=Dropdown.objects.filter(id=parent).first()).values('parent', 'id')
-        transformed_data = [{'label': item['parent'],
-                             'value': item['id']} for item in child_data]
-        return JsonResponse({'data': transformed_data}, status=status_code.SUCCESS)
+    

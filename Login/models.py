@@ -50,3 +50,9 @@ class LeftPanel(BaseModel):
     role = models.ForeignKey(Roles, on_delete=models.SET_NULL, null=True)
     icon_type = models.CharField(null=True, max_length=100)
     title = models.CharField(null=True, max_length=100)
+
+
+class RoleDropdownMapping(BaseModel):
+    role = models.ForeignKey(Roles, on_delete=models.SET_NULL, null=True)
+    dropdown_parent = models.ForeignKey(
+        Dropdown, on_delete=models.SET_NULL, null=True)

@@ -13,8 +13,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import secret
 import os
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+SETTINGS_PATH = os.path.dirname(os.path.dirname(__file__))
 
 
 # Quick-start development settings - unsuitable for production
@@ -39,7 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'Login',
-    'execution'
+    'execution',
+    'owner',
+    'common'
 ]
 
 MIDDLEWARE = [
@@ -72,6 +74,13 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'predine.wsgi.application'
+
+MEDIA_URL = "/media/"
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+CONTENT_TYPES = ["jpeg", "jpg", "png", "pdf"]
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880
 
 
 # Database
