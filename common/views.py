@@ -55,7 +55,9 @@ def get_child(request):
         if parent_exist is None:
             return JsonResponse({'msg': status_message.PARENT_NOT_FOUND}, status=status_code.BAD_REQUEST)
         child_data = Dropdown.objects.filter(
-            child=Dropdown.objects.filter(id=parent).first()).values('parent', 'id')
+            child=Dropdown.objects.filter(id=parent).first(), added_by=request.user, deleted_status=False).values('parent', 'id')
         transformed_data = [{'label': item['parent'],
                              'value': item['id']} for item in child_data]
         return JsonResponse({'data': transformed_data}, status=status_code.SUCCESS)
+    else:
+        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
