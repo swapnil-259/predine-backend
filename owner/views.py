@@ -59,9 +59,15 @@ def add_dish(request):
         price = request.POST.get('price')
         category = request.POST.get('category')
         image = request.FILES.get('image')
+        diet = request.POST.get('diet')
+        recommended = request.POST.get('recommended')
         category_exist = Dropdown.objects.filter(
             id=category, child__parent='DISH CATEGORY', deleted_status=False).first()
         if category_exist is None:
+            return JsonResponse({'msg': status_message.BAD_REQUEST}, status=status_code.BAD_REQUEST)
+        diet_exist = Dropdown.objects.filter(
+            id=diet, child__parent='DIET PREFERENCE', deleted_status=False).first()
+        if diet_exist is None:
             return JsonResponse({'msg': status_message.BAD_REQUEST}, status=status_code.BAD_REQUEST)
 
         dish_created = Dish.objects.create(
@@ -71,7 +77,9 @@ def add_dish(request):
             preparation_time=preparation_time,
             price=price,
             category=category_exist,
-            image=image
+            image=image,
+            diet=diet_exist,
+            recommended=recommended
         )
         if dish_created is not None:
             return JsonResponse({'msg': status_message.DISH_ADDED}, status=status_code.CREATED)
@@ -92,4 +100,35 @@ def get_dish_type(request):
 
         return JsonResponse({'data': transformed_data}, status=status_code.SUCCESS)
     else:
-        return JsonResponse({'data': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+
+
+def get_diet_pref(request):
+    if request_handlers.request_type(request, 'GET'):
+        data = Dropdown.objects.filter(
+            child=Dropdown.objects.filter(parent="DIET PREFERENCE").first()
+        ).values('parent', 'id')
+        transformed_data = [{'label': item['parent'],
+                             'value': item['id']} for item in data]
+
+        return JsonResponse({'data': transformed_data}, status=status_code.SUCCESS)
+    else:
+        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+
+
+def get_all_dishes(request):
+    if request_handlers.request_type(request, 'GET'):
+        data = Dish.objects.filter(restaurant=OwnerDetails.objects.get(owner=request.user), deleted_status=False).values(
+            'name', 'description', 'price', 'preparation_time', 'category_id__parent', 'image', 'diet__parent', 'recommended')
+        return JsonResponse({'data': list(data)}, status=status_code.SUCCESS)
+    else:
+        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+
+
+def get_all_categories(request):
+    if request_handlers.request_type(request, 'GET'):
+        category_data = list(Dropdown.objects.filter(
+            child_id__parent='DISH CATEGORY', added_by=request.user, deleted_status=False).values('id', 'parent'))
+        return JsonResponse({'data': category_data}, status=status_code.SUCCESS)
+    else:
+        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)

@@ -14,3 +14,6 @@ class Dish(BaseModel):
         Dropdown, on_delete=models.SET_NULL, null=True)
     image = models.FileField(upload_to=functions.get_dish_img, null=False)
     preparation_time = models.PositiveIntegerField(null=False)
+    diet = models.ForeignKey(
+        Dropdown, on_delete=models.SET_NULL, related_name='dish_diet', null=True)
+    recommended = models.BooleanField(default=False)
