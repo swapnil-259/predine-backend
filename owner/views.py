@@ -132,3 +132,20 @@ def get_all_categories(request):
         return JsonResponse({'data': category_data}, status=status_code.SUCCESS)
     else:
         return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+
+
+def change_restaurant_pic(request):
+    if request_handlers.request_type(request, 'POST'):
+        print(request.FILES)
+        image = request.FILES.get('image')
+        print("ing", image)
+        data = OwnerDetails.objects.filter(
+            owner_id=request.user, deleted_status=False).first()
+        if data is not None:
+            data.restaurant_pic = image
+            data.save()
+            return JsonResponse({'msg': 'Successfully Change Image'}, status=status_code.SUCCESS)
+        else:
+            return JsonResponse({'msg': 'No Restaurant Found'}, status=status_code.BAD_REQUEST)
+    else:
+        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
