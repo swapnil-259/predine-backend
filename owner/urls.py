@@ -8,6 +8,10 @@ urlpatterns = [
     path('get_diet_pref/', views.get_diet_pref),
     path('all_dish/', views.get_all_dishes),
     path('get_all_category/', views.get_all_categories),
-    path('change_res_pic/', views.change_restaurant_pic)
-
+    path('change_res_pic/', views.change_restaurant_pic),
+    path('change_password/', views.change_password),
+    path('check_login_status/', views.check_owner_login_status),
+    path('add_chef/', views.add_chef),
+    path('add_bank_details/', views.add_bank_details),
+    path('get_chefs/', views.get_all_chef)
 ]

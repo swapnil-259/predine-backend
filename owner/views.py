@@ -1,10 +1,11 @@
-from django.shortcuts import render
-from predine.constants import request_handlers, status_code, status_message, functions
+from predine.constants import request_handlers, status_code, status_message
 from execution.models import OwnerDetails
 from Login.models import Dropdown
 from django.http import JsonResponse
 import json
-from owner.models import Dish
+from owner.models import Dish, ChefRestaurantMapping
+from django.contrib.auth.hashers import check_password
+from Login.models import User
 
 
 def owner_data(request):
@@ -85,7 +86,6 @@ def add_dish(request):
             return JsonResponse({'msg': status_message.DISH_ADDED}, status=status_code.CREATED)
         else:
             return JsonResponse({'msg': status_message.BAD_REQUEST}, status=status_code.BAD_REQUEST)
-
     else:
         return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
 
@@ -136,9 +136,7 @@ def get_all_categories(request):
 
 def change_restaurant_pic(request):
     if request_handlers.request_type(request, 'POST'):
-        print(request.FILES)
         image = request.FILES.get('image')
-        print("ing", image)
         data = OwnerDetails.objects.filter(
             owner_id=request.user, deleted_status=False).first()
         if data is not None:
@@ -147,5 +145,94 @@ def change_restaurant_pic(request):
             return JsonResponse({'msg': 'Successfully Change Image'}, status=status_code.SUCCESS)
         else:
             return JsonResponse({'msg': 'No Restaurant Found'}, status=status_code.BAD_REQUEST)
+    else:
+        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+
+
+def change_password(request):
+    if request_handlers.request_type(request, 'POST'):
+        data = json.loads(request.body)
+        old_password = data.get('old_password')
+        new_password = data.get('new_password')
+        owner_details = OwnerDetails.objects.filter(
+            owner_id=request.user, deleted_status=False).first()
+
+        if owner_details:
+            if check_password(old_password, owner_details.owner.password):
+                owner_details.owner.set_password(new_password)
+                owner_details.owner.save()
+                return JsonResponse({'msg': 'Successfully Change Image'}, status=status_code.SUCCESS)
+            else:
+                return JsonResponse({'msg': 'Old Password does not match'}, status=status_code.BAD_REQUEST)
+        else:
+            return JsonResponse({'msg': 'User not found'}, status=status_code.BAD_REQUEST)
+    else:
+        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+
+
+def check_owner_login_status(request):
+    if request_handlers.request_type(request, 'GET'):
+        user = User.objects.filter(
+            user=request.user, deleted_status=False).first()
+        if user.last_login is None:
+            return JsonResponse({'data': {'Change_Password': True}}, status=status_code.SUCCESS)
+        else:
+            return JsonResponse({'data': {'Change_Password': False}}, status=status_code.SUCCESS)
+    else:
+        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+
+
+def add_chef(request):
+    if request_handlers.request_type(request, 'POST'):
+        data = json.loads(request.body)
+        first_name = data.get('first_name')
+        last_name = data.get('last_name')
+        email = data.get('email')
+        phone_number = data.get('phone_number')
+        password = data.get('password')
+        user = User.objects.create_user(
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            username=email,
+            phone_number=phone_number,
+            password=password
+        )
+        chef_mapping = ChefRestaurantMapping.objects.create(chef=user, restaurant=OwnerDetails.objects.filter(
+            deleted_status=False, owner=request.user).first())
+        if chef_mapping:
+            return JsonResponse({'msg': 'Chef Added Successfully!!'}, status=status_code.SUCCESS)
+        else:
+            return JsonResponse({'msg': status_message.BAD_REQUEST}, status_code.BAD_REQUEST)
+    else:
+        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+
+
+def add_bank_details(request):
+    if request_handlers.request_type(request, 'POST'):
+        data = json.loads(request.body)
+        acc_holder_name = data.get('acc_holder_name')
+        ifsc_code = data.get('ifsc_code')
+        acc_number = data.get('acc_number')
+        owner_data = OwnerDetails.objects.filter(
+            owner=request.user, deleted_status=False).first()
+        if owner_data is None:
+            return JsonResponse({'msg': 'Onwer not Found'}, status=status_code.BAD_REQUEST)
+        owner_data.acc_holder_name = acc_holder_name
+        owner_data.ifsc_code = ifsc_code
+        owner_data.acc_number = acc_number
+        owner_data.save()
+        return JsonResponse({'msg': 'Successfully updated Bank Details'}, status=status_code.SUCCESS)
+    else:
+        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+
+
+def get_all_chef(request):
+    if request_handlers.request_type(request, 'GET'):
+        restaurant = OwnerDetails.objects.filter(
+            owner=request.user, deleted_status=False).first()
+        data = ChefRestaurantMapping.objects.filter(restaurant=restaurant).values(
+            'chef__first_name', 'chef__last_name', 'chef__email', 'chef__phone_number', 'chef_id')
+        return JsonResponse({'data': list(data)}, status=status_code.SUCCESS)
     else:
         return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)

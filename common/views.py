@@ -10,9 +10,8 @@ import json
 def parent_list(request):
 
     if request_handlers.request_type(request, 'GET'):
-        print(request.session['role'])
         data = RoleDropdownMapping.objects.filter(role=request.session.get(
-            'role'), dropdown_parent__child=None, dropdown_parent__can_edit=True).values('dropdown_parent__parent', 'dropdown_parent')
+            'role'), dropdown_parent__child=None, dropdown_parent__can_edit=True, deleted_status=False).values('dropdown_parent__parent', 'dropdown_parent')
         print(data)
 
         transformed_data = [{'label': item['dropdown_parent__parent'],
@@ -54,8 +53,10 @@ def get_child(request):
             id=parent, child=None).first()
         if parent_exist is None:
             return JsonResponse({'msg': status_message.PARENT_NOT_FOUND}, status=status_code.BAD_REQUEST)
+        print(parent)
         child_data = Dropdown.objects.filter(
-            child=Dropdown.objects.filter(id=parent).first(), added_by=request.user, deleted_status=False).values('parent', 'id')
+            child=Dropdown.objects.filter(id=parent).first(), deleted_status=False).values('parent', 'id')
+        print(child_data)
         transformed_data = [{'label': item['parent'],
                              'value': item['id']} for item in child_data]
         return JsonResponse({'data': transformed_data}, status=status_code.SUCCESS)

@@ -155,7 +155,7 @@ def get_res_type(request):
 def owner_list(request):
     if request_handlers.request_type(request, 'GET'):
         restaurant_data = OwnerDetails.objects.filter(deleted_status=False).values(
-            'id', 'restaurant_name', 'restaurant_type__parent')
+            'id', 'restaurant_name', 'restaurant_type__parent', 'restaurant_pic')
         print(restaurant_data)
         return JsonResponse({'data': list(restaurant_data)}, status=status_code.SUCCESS)
     else:
@@ -203,4 +203,3 @@ def view_owners(request):
         return JsonResponse({'data': formatted_data}, status=status_code.SUCCESS)
     else:
         return JsonResponse({'data': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
-    
