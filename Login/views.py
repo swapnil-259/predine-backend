@@ -133,6 +133,7 @@ def verify_otp(request):
         data = json.loads(request.body)
         otp = data.get('otp')
         email = data.get('email')
+        print(data)
         validate_data = functions.validate(
             email=email, otp=otp, api_type="OTP")
         if validate_data is not None:

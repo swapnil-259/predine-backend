@@ -132,3 +132,40 @@ def get_all_categories(request):
         return JsonResponse({'data': category_data}, status=status_code.SUCCESS)
     else:
         return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+
+
+def edit_res_image(request):
+    if request_handlers.request_type(request,'POST'):
+        image = request.FILES.get('image')
+        owner_data=OwnerDetails.objects.filter(owner = request.user).first()
+        if owner_data is not None:
+            owner_data.restaurant_pic=image
+            owner_data.save()
+            return JsonResponse({'msg': 'Image Updated Successfully'}, status=status_code.SUCCESS)
+        else:
+            return JsonResponse({'msg':'Do not find any owner'},status=status_code.BAD_REQUEST)
+    else:
+        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+
+
+def add_bank_details(request):
+    if request_handlers.request_type(request,'POST'):
+        data = json.loads(request.body)
+        acc_holder_name= data.get('acc_holder_name')
+        acc_ifsc_code= data.get('ifsc_code')
+        acc_number = data.get('acc_number')
+        print(acc_holder_name,acc_ifsc_code,acc_number)
+        owner_data=OwnerDetails.objects.filter(owner = request.user).first()
+        if owner_data is not None:
+            owner_data.acc_holder_name=acc_holder_name
+            owner_data.acc_ifsc_code=acc_ifsc_code
+            owner_data.acc_number=acc_number
+            owner_data.account_status=True
+            owner_data.save()
+            return JsonResponse({'msg': 'Account Details Added Successfully'}, status=status_code.SUCCESS)
+        else:
+            return JsonResponse({'msg':'Do not find any owner'},status=status_code.BAD_REQUEST)
+    else:
+        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+
+

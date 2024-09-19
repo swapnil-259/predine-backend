@@ -91,7 +91,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': secret.DB_NAME,
         'USER': secret.DB_USER,
-        'PASSWORD': secret.DB_PASS,
+        'PASSWORD':secret.DB_PASSWORD,
         'HOST': 'localhost',
         'PORT': '3306',
     }
@@ -139,13 +139,13 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Sending Email Details
+#Sending Email Details
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
-EMAIL_HOST_USER = secret.EMAIL_USER
-EMAIL_HOST_PASSWORD = secret.EMAIL_PASSWORD
+EMAIL_HOST_USER = secret.EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD = secret.EMAIL_HOST_PASSWORD
 
 AUTH_USER_MODEL = 'Login.User'

@@ -1,9 +1,10 @@
 from django.shortcuts import render
 from predine.constants import request_handlers, status_code, status_message, functions
-from Login.models import RoleDropdownMapping, Dropdown
+from Login.models import RoleDropdownMapping, Dropdown,User
 from django.http import JsonResponse
 import json
-
+from django.contrib.auth.hashers import check_password
+from django.contrib.auth.hashers import make_password
 # Create your views here.
 
 
@@ -61,3 +62,24 @@ def get_child(request):
         return JsonResponse({'data': transformed_data}, status=status_code.SUCCESS)
     else:
         return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+
+
+
+def change_password(request):
+    if request_handlers.request_type(request,'POST'):
+            data = json.loads(request.body)
+            old_password = data.get('old_password')
+            new_password = data.get('new_password')
+            
+            user = request.user
+
+            if not check_password(old_password, user.password):
+                return JsonResponse({"msg": "Old password is incorrect"}, status=status_code.BAD_REQUEST)
+            
+            user.password = make_password(new_password)
+            user.save()
+
+            return JsonResponse({"msg": "Password updated successfully"})
+        
+
+    return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)

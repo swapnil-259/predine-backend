@@ -19,7 +19,7 @@ def verification_email(email, otp):
         'email/send_otp.html', context)
     message = 'OTP verification from Predine'
     subject = 'OTP VERIFICATION | PREDINE'
-    from_email = secret.EMAIL_USER
+    from_email = secret.EMAIL_HOST_USER
     recipient_list = [email]
     mail = send_mail(subject, message, from_email,
                      recipient_list=recipient_list, html_message=html_message)

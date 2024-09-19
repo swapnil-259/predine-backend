@@ -7,6 +7,8 @@ urlpatterns = [
     path('get_dish_cat/', views.get_dish_type),
     path('get_diet_pref/', views.get_diet_pref),
     path('all_dish/', views.get_all_dishes),
-    path('get_all_category/', views.get_all_categories)
+    path('get_all_category/', views.get_all_categories),
+    path('edt_res_image/',views.edit_res_image),
+    path('add_bank_details/',views.add_bank_details)
 
 ]

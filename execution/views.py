@@ -38,7 +38,8 @@ def owner_registration(request):
         if user:
             print(role, type)
             dd_exist = Dropdown.objects.filter(
-                id=role, deleted_status=False, child=1).first()
+                id=role, deleted_status=False, child__parent='ROLE TYPE ').first()
+            print(dd_exist)
             role_exist = Roles.objects.filter(
                 role_name=dd_exist.parent, deleted_status=False).first()
             type_exist = Dropdown.objects.filter(
@@ -128,10 +129,12 @@ def owner_registration(request):
 
 def get_role_type(request):
     if request_handlers.request_type(request, 'GET'):
+        print(Dropdown.objects.filter(
+            parent="ROLE TYPE").first())
 
         data = Dropdown.objects.filter(child=Dropdown.objects.filter(
             parent="ROLE TYPE").first()).values('parent', 'id')
-
+        print("roles",data)
         transformed_data = [{'label': item['parent'],
                              'value': item['id']} for item in data]
         return JsonResponse({'data': transformed_data}, status=status_code.SUCCESS)
@@ -144,6 +147,7 @@ def get_res_type(request):
         data = Dropdown.objects.filter(
             child=Dropdown.objects.filter(parent="RESTAURANT TYPE").first()
         ).values('parent', 'id')
+        print("res",data)
         transformed_data = [{'label': item['parent'],
                              'value': item['id']} for item in data]
 
