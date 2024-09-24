@@ -169,3 +169,16 @@ def add_bank_details(request):
         return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
 
 
+def check_bank_status(request):
+    if request_handlers.request_type(request,'GET'):
+        owner_data=OwnerDetails.objects.filter(owner = request.user,deleted_status=False).first()
+        if owner_data:
+            return JsonResponse({'msg':{"account_status":owner_data.account_status}})
+    else:
+        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+ 
+
+def view_bank_details(request):
+    if request_handlers.request_type(request,'GET'):
+        bank_details = OwnerDetails.objects.filter(owner=deleted_status=False).values('acc_holder_name','acc_ifsc_code','acc_number')
+        return JsonResponse({'data':list(bank_details)})
