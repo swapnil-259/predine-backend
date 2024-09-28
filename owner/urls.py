@@ -11,6 +11,7 @@ urlpatterns = [
     path('edt_res_image/',views.edit_res_image),
     path('add_bank_details/',views.add_bank_details),
     path('check_acc_status/',views.check_bank_status),
-    path('view_bank_details/',views.view_bank_details)
+    path('view_bank_details/',views.view_bank_details),
+    path('add_chef/',views.add_chef)
 
 ]

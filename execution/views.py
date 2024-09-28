@@ -18,13 +18,13 @@ def owner_registration(request):
         address = data.get('address')
         type = data.get('res')
         role = data.get('role')
-        validate_data = functions.validate(first_name=first_name, last_name=last_name, email=email, phone_number=phone_number,
-                                           restaurant_name=restaurant_name, address=address, role=role, type=type, api_type="OWNER")
-        if validate_data is not None:
-            if validate_data['status'] == True and validate_data['other'] == False:
-                return JsonResponse({'msg': validate_data['msg']+' '+status_message.REQUIRED}, status=status_code.BAD_REQUEST)
-            elif validate_data['status'] == True and validate_data['other'] == True:
-                return JsonResponse({'msg': validate_data['msg']}, status=status_code.BAD_REQUEST)
+        # validate_data = functions.validate(first_name=first_name, last_name=last_name, email=email, phone_number=phone_number,
+                                        #    restaurant_name=restaurant_name, address=address, role=role, type=type, api_type="OWNER")
+        # if validate_data is not None:
+        #     if validate_data['status'] == True and validate_data['other'] == False:
+        #         return JsonResponse({'msg': validate_data['msg']+' '+status_message.REQUIRED}, status=status_code.BAD_REQUEST)
+        #     elif validate_data['status'] == True and validate_data['other'] == True:
+        #         return JsonResponse({'msg': validate_data['msg']}, status=status_code.BAD_REQUEST)
 
         user = User.objects.create_user(
             first_name=first_name,
@@ -42,6 +42,7 @@ def owner_registration(request):
             print(dd_exist)
             role_exist = Roles.objects.filter(
                 role_name=dd_exist.parent, deleted_status=False).first()
+            print(role_exist)
             type_exist = Dropdown.objects.filter(
                 id=type, deleted_status=False, child_id__parent="RESTAURANT TYPE").first()
             if role_exist is None:

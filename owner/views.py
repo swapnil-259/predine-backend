@@ -1,10 +1,11 @@
 from django.shortcuts import render
 from predine.constants import request_handlers, status_code, status_message, functions
 from execution.models import OwnerDetails
-from Login.models import Dropdown
+from Login.models import Dropdown,UserRole,User,Roles
 from django.http import JsonResponse
 import json
 from owner.models import Dish
+import secret
 
 
 def owner_data(request):
@@ -173,12 +174,38 @@ def check_bank_status(request):
     if request_handlers.request_type(request,'GET'):
         owner_data=OwnerDetails.objects.filter(owner = request.user,deleted_status=False).first()
         if owner_data:
-            return JsonResponse({'msg':{"account_status":owner_data.account_status}})
+            return JsonResponse({"account_status":owner_data.account_status})
     else:
         return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
  
 
 def view_bank_details(request):
     if request_handlers.request_type(request,'GET'):
-        bank_details = OwnerDetails.objects.filter(owner=deleted_status=False).values('acc_holder_name','acc_ifsc_code','acc_number')
+        bank_details = OwnerDetails.objects.filter(owner=request.user,deleted_status=False).values('acc_holder_name','acc_ifsc_code','acc_number')
         return JsonResponse({'data':list(bank_details)})
+    else:
+        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+
+def add_chef(request):
+    if request_handlers.request_type(request,'POST'):
+        data = json.loads(request.body)
+        first_name=data.get('first_name')
+        last_name=data.get('last_name')
+        email = data.get('email')
+        phone_number = data.get('phone_number')
+        if User.objects.filter(email=email).exists():
+            return JsonResponse({'msg': 'User with this email already exists.'}, status=status_code.BAD_REQUEST)
+
+        user = User.objects.create_user(
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            phone_number=phone_number,
+            username = email,
+            password = secret.CHEF_PASS
+        )
+        UserRole.objects.create(user = user,role = Roles.objects.get(role_name='CHEF'))
+        return JsonResponse({'msg':'Chef Added Successfully'},status=status_code.SUCCESS)
+    else:
+        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+

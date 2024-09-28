@@ -15,36 +15,40 @@ def login_user(request):
         data = json.loads(request.body)
         username = data.get('username')
         password = data.get('password')
-        validate_data = functions.validate(username=username,
-                                           password=password, api_type="LOGIN")
+
+        validate_data = functions.validate(username=username, password=password, api_type="LOGIN")
         if validate_data is not None:
             if validate_data['status'] == True and validate_data['other'] == False:
-                return JsonResponse({'msg': validate_data['msg']+' '+status_message.REQUIRED}, status=status_code.BAD_REQUEST)
+                return JsonResponse({'msg': validate_data['msg'] + ' ' + status_message.REQUIRED}, status=status_code.BAD_REQUEST)
             elif validate_data['status'] == True and validate_data['other'] == True:
                 return JsonResponse({'msg': validate_data['msg']}, status=status_code.BAD_REQUEST)
 
+        try:
+            user = User.objects.get(email=username)
+        except User.DoesNotExist:
+            return JsonResponse({'msg': 'User not found.'}, status=status_code.BAD_REQUEST)
+
         user = authenticate(username=username, password=password)
         if user is not None:
+            check_email_verified = OTPDetails.objects.filter(email=username).order_by('-id').first()
+            if check_email_verified is not None:
+                if not check_email_verified.verified_status:
+                    return JsonResponse({'msg': status_message.EMAIL_NOT_VERIFIED}, status=status_code.BAD_REQUEST)
+            else:
+                return JsonResponse({'msg': status_message.EMAIL_NOT_VERIFIED}, status=status_code.BAD_REQUEST)
+
             login(request, user)
-            role = list(UserRole.objects.filter(
-                user=user).values('role_id', 'role_id__role_name'))
-            print(role)
+            role = list(UserRole.objects.filter(user=user).values('role_id', 'role_id__role_name'))
             request.session['user'] = user.id
             request.session['role'] = role[0]['role_id']
             request.session['role_name'] = role[0]['role_id__role_name']
 
-            check_email_verified = OTPDetails.objects.filter(
-                email=username).order_by('-id').first()
-            if check_email_verified is not None:
-                if check_email_verified.verified_status is False:
-                    return JsonResponse({'msg': status_message.EMAIL_NOT_VERIFIED}, status=status_code.BAD_REQUEST)
-            else:
-                return JsonResponse({'msg': status_message.EMAIL_NOT_VERIFIED}, status=status_code.BAD_REQUEST)
             return JsonResponse({"msg": status_message.LOGIN})
+
         else:
             return JsonResponse({"msg": status_message.WRONG_CREDENTIALS}, status=status_code.BAD_REQUEST)
     else:
-        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLOWED)
 
 
 def user_registration(request):
@@ -109,6 +113,7 @@ def send_verification_mail(request):
                 return JsonResponse({'msg': validate_data['msg']+' '+status_message.REQUIRED}, status=status_code.BAD_REQUEST)
             elif validate_data['status'] == True and validate_data['other'] == True:
                 return JsonResponse({'msg': validate_data['msg']}, status=status_code.BAD_REQUEST)
+        OTPDetails.objects.filter(email=email).update(deleted_status=True)
         otp = random.randint(100000, 999999)
         otp_generate = OTPDetails.objects.create(
             email=email,
