@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'Login',
     'execution',
     'owner',
-    'common'
+    'common',
+    'user'
 ]
 
 MIDDLEWARE = [

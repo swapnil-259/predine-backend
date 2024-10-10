@@ -102,35 +102,36 @@ def user_registration(request):
 def send_verification_mail(request):
     if request_handlers.request_type(request, 'POST'):
         data = json.loads(request.body)
-        print(data)
         email = data.get('email')
-        print(email)
+
+        # Check if email is already verified
         if OTPDetails.objects.filter(email=email, verified_status=True).exists():
             return JsonResponse({'msg': status_message.EMAIL_ALREADY_VERIFIED}, status=status_code.BAD_REQUEST)
+
+        # Validate email data
         validate_data = functions.validate(email=email, api_type="INITIAL REG")
         if validate_data is not None:
             if validate_data['status'] == True and validate_data['other'] == False:
-                return JsonResponse({'msg': validate_data['msg']+' '+status_message.REQUIRED}, status=status_code.BAD_REQUEST)
+                return JsonResponse({'msg': validate_data['msg'] + ' ' + status_message.REQUIRED}, status=status_code.BAD_REQUEST)
             elif validate_data['status'] == True and validate_data['other'] == True:
                 return JsonResponse({'msg': validate_data['msg']}, status=status_code.BAD_REQUEST)
+
         OTPDetails.objects.filter(email=email).update(deleted_status=True)
+
         otp = random.randint(100000, 999999)
-        otp_generate = OTPDetails.objects.create(
-            email=email,
-            otp=otp
-        )
+        otp_generate = OTPDetails.objects.create(email=email, otp=otp)
+
         if otp_generate:
             mail = functions.verification_email(email, otp)
             if mail:
-                threading.Thread(
-                    target=(functions.otp_expire), args=(email, otp)).start()
+                threading.Thread(target=functions.otp_expire, args=(email, otp)).start()
                 return JsonResponse({'msg': status_message.OTP_SENT})
             else:
                 return JsonResponse({"msg": status_message.BAD_REQUEST}, status=status_code.BAD_REQUEST)
         else:
             return JsonResponse({"msg": status_message.BAD_REQUEST}, status=status_code.BAD_REQUEST)
     else:
-        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLOWED)
 
 
 def verify_otp(request):

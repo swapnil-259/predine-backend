@@ -25,7 +25,8 @@ urlpatterns = [
     path('noauth/', include('Login.urls')),
     path('execution/', include('execution.urls')),
     path('owner/', include('owner.urls')),
-    path('common/', include('common.urls'))
+    path('common/', include('common.urls')),
+    path('user/',include('user.urls'))
 ]
 
 if settings.DEBUG:
