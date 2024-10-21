@@ -1,0 +1,52 @@
+services:
+  
+  predine_mysql:
+    image: mysql:8
+    container_name: predinemysql
+    restart: always
+    env_file:
+      - ../env/mysql.env
+    volumes:
+      - ../db/:/var/lib/mysql
+    ports:
+      - "3303:3306"
+
+  predine_phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: predinephp
+    env_file:
+      - ../env/phpmyadmin.env
+    ports:
+      - "5001:80"
+    restart: always
+    depends_on:
+      - predine_mysql
+
+  predine_django:
+    container_name: predinedjango
+    build:
+      context: .
+    ports:
+      - "8002:8000"
+    restart: always
+    command: /bin/sh -c "while ! nc -z predinemysql 3306; do sleep 1; done; python manage.py runserver 0.0.0.0:8000 && while sleep 1000; do :; done"
+    depends_on:
+      - predine_mysql
+    volumes:
+      - ../:/predine_backend
+
+
+  nginx:
+    image: nginx:latest
+    container_name: predine_nginx
+    restart: always
+    ports:
+      - "80:80" 
+    volumes:
+      - /home/predine/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - predine_django
+networks:
+  default:
+    name: nginx
+    external: true

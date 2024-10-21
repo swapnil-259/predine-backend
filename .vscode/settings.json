@@ -1,0 +1,9 @@
+{
+    "[python]": {
+      "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "editor.formatOnSave": true,
+    "python.formatting.provider": "black",
+    "python.analysis.typeCheckingMode": "off",
+    "python.analysis.autoImportCompletions": true,
+  }

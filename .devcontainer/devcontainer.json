@@ -1,0 +1,34 @@
+
+{
+	"name": "predine-backend",
+	"dockerComposeFile": [
+		"../docker/docker-compose.yaml"
+	],
+	"service": "django",
+	"workspaceFolder": "/predine-backend",
+	"runServices": [
+		"django",
+		"mysql",
+		"phpmyadmin"
+	],
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-python.python",
+				"batisteo.vscode-django",
+				"streetsidesoftware.code-spell-checker",
+				"ms-python.black-formatter",
+				"ms-python.isort",
+				"njpwerner.autodocstring",
+				"eamodio.gitlens",
+				"ms-azuretools.vscode-docker"
+			],
+			"settings": {
+				"editor.codeActionsOnSave": {
+					"source.fixAll": true,
+					"source.organizeImports": true
+				}
+			}
+		}
+	}
+}
