@@ -19,3 +19,7 @@ class OwnerDetails(BaseModel):
     is_password_updated=models.BooleanField(default=False)
     account_status=models.BooleanField(default=False)
 
+class DashboardMapping(BaseModel):
+    category = models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='dash_map_category')
+    image =  models.FileField(upload_to='',null=True)
+    

@@ -209,3 +209,10 @@ def view_owners(request):
     else:
         return JsonResponse({'data': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
     
+# def DashboardMappingView(request):
+#     if request_handlers.request_type(request,'POST'):
+#         category = request.GET.get('category')
+#         image = request.FILES.get('image')
+#         if category and image is None:
+#             return JsonResponse({'msg':'category and Image both are required fields'},status=status_code.BAD_REQUEST)
+#         category_data = Dropdown.obec
