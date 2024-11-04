@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'execution',
     'owner',
     'common',
-    'user'
+    'user',
+    'chef'
 ]
 
 MIDDLEWARE = [

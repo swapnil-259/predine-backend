@@ -12,6 +12,11 @@ urlpatterns = [
     path('add_bank_details/',views.add_bank_details),
     path('check_acc_status/',views.check_bank_status),
     path('view_bank_details/',views.view_bank_details),
-    path('add_chef/',views.add_chef)
+    path('add_chef/',views.add_chef),
+    path('orders/',views.get_orders),
+    path('orders/accept/',views.accept_order),
+    path('orders/reject/',views.reject_order)
+
+
 
 ]

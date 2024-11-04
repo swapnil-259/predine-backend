@@ -26,7 +26,9 @@ urlpatterns = [
     path('execution/', include('execution.urls')),
     path('owner/', include('owner.urls')),
     path('common/', include('common.urls')),
-    path('user/',include('user.urls'))
+    path('user/',include('user.urls')),
+    path('chef/',include('chef.urls'))
+
 ]
 
 if settings.DEBUG:

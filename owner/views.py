@@ -4,8 +4,9 @@ from execution.models import OwnerDetails
 from Login.models import Dropdown,UserRole,User,Roles
 from django.http import JsonResponse
 import json
-from owner.models import Dish
+from owner.models import ChefRestaurantMapping, Dish
 import secret
+from user.models import OrderDetails,OrderDishDetails,OrderLogs
 
 
 def owner_data(request):
@@ -193,6 +194,8 @@ def add_chef(request):
         last_name=data.get('last_name')
         email = data.get('email')
         phone_number = data.get('phone_number')
+        restaurant = OwnerDetails.objects.get(owner=request.user)
+
         if User.objects.filter(email=email).exists():
             return JsonResponse({'msg': 'User with this email already exists.'}, status=status_code.BAD_REQUEST)
 
@@ -204,8 +207,103 @@ def add_chef(request):
             username = email,
             password = secret.CHEF_PASS
         )
-        UserRole.objects.create(user = user,role = Roles.objects.get(role_name='CHEF'))
+        user_role=UserRole.objects.create(user = user,role = Roles.objects.get(role_name='CHEF'))
+        ChefRestaurantMapping.objects.create(chef = user_role,restaurant=restaurant)
         return JsonResponse({'msg':'Chef Added Successfully'},status=status_code.SUCCESS)
     else:
         return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
 
+
+from django.db.models import Max
+
+def get_orders(request):
+    if request_handlers.request_type(request, 'GET'):
+        restaurant = OwnerDetails.objects.filter(owner=request.user, deleted_status=False).first()
+        
+        order_data = OrderDetails.objects.filter(restaurant=restaurant, deleted_status=False)
+
+        orders = []
+        for order in order_data:
+            # Fetch the latest log with level 1 (current order status)
+            latest_order_log = (
+                OrderLogs.objects.filter(order=order, level=1)
+                .order_by('-created_time')
+                .first()
+            )
+
+            # Fetch the receiver status from level 3
+            receiver_status_log = (
+                OrderLogs.objects.filter(order=order, level=3)
+                .order_by('-created_time')
+                .first()
+            )
+
+            if not latest_order_log:
+                continue
+            
+            dish_details = OrderDishDetails.objects.filter(order=order)
+            dishes = [
+                {
+                    'dish_id': dish_detail.dish.id,
+                    'dish_name': dish_detail.dish.name,
+                    'quantity': dish_detail.quantity,
+                    'amount': dish_detail.amount,
+                }
+                for dish_detail in dish_details
+            ]
+
+            orders.append({
+                'order_id': order.order_id,
+                'order_status': latest_order_log.order_status.parent if latest_order_log.order_status else None,
+                'payment_status': order.payment_status.parent if order.payment_status else None,
+                'payment_id': order.payment_id if order.payment_status and order.payment_status.parent == 'Success' else None,
+                'total_amount': order.total_amount,
+                'order_time': order.created_time.isoformat() if order.created_time else None,
+                'order_receiving_time': order.order_time.isoformat() if order.order_time else None,
+                'dishes': dishes,
+                'receiver_status': receiver_status_log.order_status.parent if receiver_status_log and receiver_status_log.order_status else None,  # Receiver status from level 3
+            })
+
+        return JsonResponse({'data': orders}, status=200)
+
+    else:
+        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLOWED)
+
+
+
+def accept_order(request):
+    if request_handlers.request_type(request,'POST'):
+        data = json.loads(request.body)
+        order_id = data.get('order_id')
+        print(order_id)
+        order = OrderDetails.objects.filter(order_id=order_id,deleted_status=False).first()
+        if order is None:
+            return JsonResponse({'msg':'No orderId Found'},status=status_code.BAD_REQUEST)
+
+
+        level_1_log = OrderLogs.objects.get(order=order, level=1)
+        level_1_log.order_status = Dropdown.objects.filter(parent='Accepted',child__parent='ORDER STATUS',deleted_status=False) .first()
+        level_1_log.save()
+        return JsonResponse({'msg': 'Order accepted successfully.'})
+
+        
+    else:
+        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+
+def reject_order(request):
+    
+    if request_handlers.request_type(request,'POST'):
+
+        data = json.loads(request.body)
+        order_id = data.get('order_id')
+        order = OrderDetails.objects.filter(order_id=order_id,deleted_status=False).first()
+        if order is None:
+            return JsonResponse({'msg':'No orderId Found'},status=status_code.BAD_REQUEST)
+
+        level_1_log = OrderLogs.objects.get(order=order, level=1)
+        level_1_log.order_status = Dropdown.objects.filter(parent='Rejected',child__parent='ORDER STATUS',deleted_status=False).first()
+        level_1_log.save()
+        return JsonResponse({'msg': 'Order rejected successfully.'})
+
+    else:
+        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)

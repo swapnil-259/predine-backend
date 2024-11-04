@@ -1,5 +1,5 @@
 from django.db import models
-from Login.models import BaseModel, Dropdown
+from Login.models import BaseModel, Dropdown, UserRole
 from execution.models import OwnerDetails
 from predine.constants import functions
 
@@ -17,3 +17,7 @@ class Dish(BaseModel):
     diet = models.ForeignKey(
         Dropdown, on_delete=models.SET_NULL, related_name='dish_diet', null=True)
     recommended = models.BooleanField(default=False)
+
+class ChefRestaurantMapping(BaseModel):
+    chef = models.ForeignKey(UserRole,on_delete=models.SET_NULL,null=True)
+    restaurant =models.ForeignKey(OwnerDetails,on_delete=models.SET_NULL,null=True)
