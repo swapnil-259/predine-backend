@@ -91,10 +91,10 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': secret.DB_NAME,
-        'USER': secret.DB_USER,
-        'PASSWORD':secret.DB_PASSWORD,
-        'HOST': 'localhost',
+        'NAME': secret.MYSQL_DB,
+        'USER': secret.MYSQL_USER,
+        'PASSWORD':secret.MYSQL_PASSWORD,
+        'HOST': 'predine_mysql',
         'PORT': '3306',
     }
 }
