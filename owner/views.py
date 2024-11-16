@@ -307,3 +307,29 @@ def reject_order(request):
 
     else:
         return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+
+def cancel_dish(request):
+    if request_handlers.request_type(request, "POST"):
+        data = json.loads(request.body)
+        print(data)
+        dish_id = data.get("dish_id")
+        if dish_id is None:
+            return JsonResponse(
+                {"msg": "Dish not Found"}, status=status_code.BAD_REQUEST
+            )
+        print("dis", dish_id)
+        dish_data = OrderDishDetails.objects.filter(id=dish_id).first()
+        print(dish_data.order.total_amount - dish_data.amount)
+        dish_data.cancel = True
+        dish_data.order.total_amount = dish_data.order.total_amount - dish_data.amount
+        dish_data.save()
+        dish_data.order.save()
+
+        return JsonResponse(
+            {"msg": "Dish cancel successfully"}, status=status_code.SUCCESS
+        )
+    else:
+        return JsonResponse(
+            {"msg": status_message.METHOD_NOT_ALLOWED},
+            status=status_code.METHOD_NOT_ALLWOED,
+        )
