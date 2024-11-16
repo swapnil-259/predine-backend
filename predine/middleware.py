@@ -1,5 +1,6 @@
-from predine.constants import path, status_code, status_message
 from django.http import JsonResponse
+
+from predine.constants import path, status_code, status_message
 
 
 def authentication(get_response):
@@ -9,18 +10,25 @@ def authentication(get_response):
         if req_path in path.AUTHENTICATED_PATH:
             print("hello")
             if request.user.is_authenticated:
-                print(request.session['role'], request.session['role_name'])
+                print(request.session["role"], request.session["role_name"])
                 response = get_response(request)
-                role_res = check_role(req_path, request.session['role_name'])
+                role_res = check_role(req_path, request.session["role_name"])
+                print(role_res)
 
                 if role_res:
                     return response
-                return JsonResponse({"msg": status_message.FORBIDDEN}, status=status_code.FORBIDDEN)
+                return JsonResponse(
+                    {"msg": status_message.FORBIDDEN}, status=status_code.FORBIDDEN
+                )
             else:
-                return JsonResponse({"msg": status_message.UNAUTHENTICATED}, status=status_code.UNAUTHENTICATED)
+                return JsonResponse(
+                    {"msg": status_message.UNAUTHENTICATED},
+                    status=status_code.UNAUTHENTICATED,
+                )
         else:
             response = get_response(request)
             return response
+
     return check_authentication
 
 
