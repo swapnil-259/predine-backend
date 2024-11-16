@@ -69,6 +69,10 @@ def user_registration(request):
                 return JsonResponse({'msg': validate_data['msg']}, status=status_code.BAD_REQUEST)
         if confirm_password != password:
             return JsonResponse({'msg': status_message.PASSWORD_NOT_MATCH}, status=status_code.BAD_REQUEST)
+        if User.objects.filter(username = email,deleted_status=False).exists():
+            return JsonResponse({'msg': status_message.USER_ALREADY_REGISTERED}, status=status_code.BAD_REQUEST)
+
+
 
         if UserRole.objects.filter(user_id__email=email, role_id__role_name='USER').exists():
             return JsonResponse({'msg': status_message.USER_ALREADY_REGISTERED}, status=status_code.BAD_REQUEST)
@@ -89,6 +93,11 @@ def user_registration(request):
                 role=Roles.objects.get(role_name='USER'),
                 user=user
             )
+            login(request, user)
+            role = list(UserRole.objects.filter(user=user).values('role_id', 'role_id__role_name'))
+            request.session['user'] = user.id
+            request.session['role'] = role[0]['role_id']
+            request.session['role_name'] = role[0]['role_id__role_name']
         else:
             return JsonResponse({"msg": status_code.BAD_REQUEST}, status=status_message.BAD_REQUEST)
         if role:

@@ -18,6 +18,11 @@ def owner_registration(request):
         address = data.get('address')
         type = data.get('res')
         role = data.get('role')
+
+        # Check if a user with the same email already exists
+        if User.objects.filter(email=email).exists():
+            return JsonResponse({'msg': 'A user with this email already exists.'}, status=status_code.BAD_REQUEST)
+
         # validate_data = functions.validate(first_name=first_name, last_name=last_name, email=email, phone_number=phone_number,
                                         #    restaurant_name=restaurant_name, address=address, role=role, type=type, api_type="OWNER")
         # if validate_data is not None:

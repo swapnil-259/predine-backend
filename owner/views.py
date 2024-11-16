@@ -130,7 +130,7 @@ def get_all_dishes(request):
 def get_all_categories(request):
     if request_handlers.request_type(request, 'GET'):
         category_data = list(Dropdown.objects.filter(
-            child_id__parent='DISH CATEGORY', added_by=request.user, deleted_status=False).values('id', 'parent'))
+            child_id__parent='DISH CATEGORY', deleted_status=False).values('id', 'parent'))
         return JsonResponse({'data': category_data}, status=status_code.SUCCESS)
     else:
         return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)

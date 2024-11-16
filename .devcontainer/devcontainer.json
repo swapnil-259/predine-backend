@@ -4,12 +4,12 @@
 	"dockerComposeFile": [
 		"../docker/docker-compose.yaml"
 	],
-	"service": "django",
+	"service": "predine_django",
 	"workspaceFolder": "/predine-backend",
 	"runServices": [
-		"django",
-		"mysql",
-		"phpmyadmin"
+		"predine_django",
+		"predine_mysql",
+		"predine_phpmyadmin"
 	],
 	"customizations": {
 		"vscode": {
