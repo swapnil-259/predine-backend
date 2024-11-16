@@ -5,3 +5,4 @@ secret.py
 /media
 db/
 env/
+.~lock.docker-compose.yaml#
