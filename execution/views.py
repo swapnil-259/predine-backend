@@ -1,5 +1,5 @@
 from .models import OwnerDetails, User, Dropdown
-from Login.models import UserRole, Roles, RoleDropdownMapping
+from Login.models import UserRole, Roles
 import json
 from django.http import JsonResponse
 from predine.constants import request_handlers, status_code, status_message, functions

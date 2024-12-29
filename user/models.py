@@ -30,4 +30,5 @@ class OrderLogs(models.Model):
     level = models.IntegerField(default=1)
     order_status = models.ForeignKey(Dropdown, on_delete=models.SET_NULL, null=True)
     created_time = models.DateTimeField(auto_now_add=True)
+    updated_time = models.DateTimeField(auto_now=True,null=True)
     remark = models.CharField(max_length=200, null=True)

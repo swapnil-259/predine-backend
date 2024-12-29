@@ -3,8 +3,6 @@ from urllib import request
 
 from django.http import JsonResponse
 from django.shortcuts import render
-from django.utils.dateparse import parse_datetime
-
 from execution.models import OwnerDetails
 from Login.models import Dropdown, User
 from owner.models import Dish
@@ -12,7 +10,32 @@ from predine.algorithms.order_id import generate_unique_order_id
 from predine.constants import request_handlers, status_code, status_message
 from predine.constants.razorpay import razorpay_client
 from user.models import OrderDetails, OrderDishDetails, OrderLogs
+from django.shortcuts import render
+import time
+# from predine.constants.functions import order_cancelled_no_owner_response
+import threading
 
+def order_cancelled_no_owner_response(order_id):
+    print("fucntion calledddddd")
+    if order_id is None:
+        return JsonResponse({"msg": "Order Id is required"}, status=status_code.BAD_REQUEST)
+    order_details = OrderDetails.objects.filter(id=order_id).first()
+    if not order_details:
+            print(f"Order {order_id} not found.")
+            return
+
+    order_log = OrderLogs.objects.filter(order=order_details, level=1).first()
+    if not order_log:
+        return
+
+    if (
+            order_details.payment_status.parent == "Pending"
+            and order_log.order_status.parent == "Pending"
+        ):
+            order_log.order_status = Dropdown.objects.filter(
+                parent="No Response", child__parent="CANCELLED STATUS"
+            ).first()
+            order_log.save()
 
 def get_all_restaurants(request):
     if request_handlers.request_type(request, "GET"):
@@ -84,8 +107,8 @@ def place_order(request):
             payment_status=Dropdown.objects.filter(
                 child__parent="PAYMENT STATUS", parent="Pending", deleted_status=False
             ).first(),
-            total_amount=total_price,
-            order_time=parse_datetime(selected_time),
+            total_amount=1,
+            order_time=selected_time,
             restaurant_id=restaurant_id,
         )
 
@@ -104,6 +127,12 @@ def place_order(request):
                 child__parent="ORDER STATUS", parent="Pending", deleted_status=False
             ).first(),
         )
+        def monitor_order(order_id):
+            time.sleep(120)  
+            order_cancelled_no_owner_response(order_id)
+
+        thread = threading.Thread(target=monitor_order, args=(order.id,))
+        thread.start()
 
         return JsonResponse({"msg": "Order placed successfully"})
     else:
@@ -143,7 +172,8 @@ def get_user_orders(request):
             else:
                 order_status = "Not Provided"
 
-            order_dishes = OrderDishDetails.objects.filter(order=order)
+            order_dishes = OrderDishDetails.objects.filter(order=order,cancel=False)
+            print("heelo",last_order_log.order_status.parent)
             if last_order_log.order_status.parent == "Pending":
                 print("heeloooooo")
             dishes_summary = [
@@ -168,7 +198,7 @@ def get_user_orders(request):
                     ),
                     "total_amount": order.total_amount,
                     "order_time": (
-                        order.created_time.strftime("%Y-%m-%d %H:%M:%S")
+                        order.created_time
                         if order.created_time
                         else "Not Available"
                     ),
@@ -177,8 +207,10 @@ def get_user_orders(request):
                     "order_status": order_status,
                     "level": (
                         last_order_log.level if last_order_log else "Not Available"
-                    ),  # Add level of last log entry
+                    ),  
+                    "last_order_time":last_order_log.updated_time,
                     "dishes": dishes_summary,
+
                 }
             )
 
@@ -293,3 +325,18 @@ def cancel_order(request):
             {"msg": status_message.METHOD_NOT_ALLOWED},
             status=status_code.METHOD_NOT_ALLWOED,
         )
+
+
+def show_privacy_policy(request):
+        return render(request, 'privacy_policy.html')
+
+
+
+def request_account_deletion(request):
+    if request.method == 'GET':
+        # Logic to handle account deletion
+        # You can save the request in a database, send an email, or immediately process the deletion
+        return JsonResponse({"message": "Your account deletion request has been submitted."})
+
+
+

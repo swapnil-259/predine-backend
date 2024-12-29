@@ -6,7 +6,31 @@ from django.http import JsonResponse
 import json
 from owner.models import ChefRestaurantMapping, Dish
 import secret
+import time 
+import threading
 from user.models import OrderDetails,OrderDishDetails,OrderLogs
+
+def order_cancelled_no_payment(order_id):
+    print("fucntion calledddddd")
+    if order_id is None:
+        return JsonResponse({"msg": "Order Id is required"}, status=status_code.BAD_REQUEST)
+    order_details = OrderDetails.objects.filter(id=order_id).first()
+    if not order_details:
+            print(f"Order {order_id} not found.")
+            return
+
+    order_log = OrderLogs.objects.filter(order=order_details, level=1).first()
+    if not order_log:
+        return
+
+    if (
+            order_details.payment_status.parent == "Pending"
+            and order_log.order_status.parent == "Accepted"
+        ):
+            order_log.order_status = Dropdown.objects.filter(
+                parent="No Payment", child__parent="CANCELLED STATUS"
+            ).first()
+            order_log.save()
 
 
 def owner_data(request):
@@ -214,7 +238,6 @@ def add_chef(request):
         return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
 
 
-from django.db.models import Max
 
 def get_orders(request):
     if request_handlers.request_type(request, 'GET'):
@@ -224,14 +247,12 @@ def get_orders(request):
 
         orders = []
         for order in order_data:
-            # Fetch the latest log with level 1 (current order status)
             latest_order_log = (
                 OrderLogs.objects.filter(order=order, level=1)
                 .order_by('-created_time')
                 .first()
             )
 
-            # Fetch the receiver status from level 3
             receiver_status_log = (
                 OrderLogs.objects.filter(order=order, level=3)
                 .order_by('-created_time')
@@ -241,13 +262,14 @@ def get_orders(request):
             if not latest_order_log:
                 continue
             
-            dish_details = OrderDishDetails.objects.filter(order=order)
+            dish_details = OrderDishDetails.objects.filter(order=order,cancel=False)
             dishes = [
                 {
                     'dish_id': dish_detail.dish.id,
                     'dish_name': dish_detail.dish.name,
                     'quantity': dish_detail.quantity,
                     'amount': dish_detail.amount,
+                    'id': dish_detail.id,
                 }
                 for dish_detail in dish_details
             ]
@@ -284,6 +306,14 @@ def accept_order(request):
         level_1_log = OrderLogs.objects.get(order=order, level=1)
         level_1_log.order_status = Dropdown.objects.filter(parent='Accepted',child__parent='ORDER STATUS',deleted_status=False) .first()
         level_1_log.save()
+        def monitor_order(orderid):
+            time.sleep(180)  
+            order_cancelled_no_payment(orderid)
+
+        thread = threading.Thread(target=monitor_order, args=(order_id,))
+        thread.start()
+
+
         return JsonResponse({'msg': 'Order accepted successfully.'})
 
         
@@ -313,12 +343,14 @@ def cancel_dish(request):
         data = json.loads(request.body)
         print(data)
         dish_id = data.get("dish_id")
+        print('dishid',dish_id)
         if dish_id is None:
             return JsonResponse(
                 {"msg": "Dish not Found"}, status=status_code.BAD_REQUEST
             )
         print("dis", dish_id)
         dish_data = OrderDishDetails.objects.filter(id=dish_id).first()
+        print('dish',dish_data)
         print(dish_data.order.total_amount - dish_data.amount)
         dish_data.cancel = True
         dish_data.order.total_amount = dish_data.order.total_amount - dish_data.amount

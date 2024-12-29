@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+from pickle import TRUE
 import secret
 import os
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -96,6 +97,8 @@ DATABASES = {
         'PASSWORD':secret.MYSQL_PASSWORD,
         'HOST': 'predine_mysql',
         'PORT': '3306',
+        'TIME_ZONE': 'Asia/Kolkata',
+
     }
 }
 
@@ -124,10 +127,10 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
-
+USE_L10N = True
 USE_TZ = True
 
 

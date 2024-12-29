@@ -6,3 +6,5 @@ secret.py
 db/
 env/
 .~lock.docker-compose.yaml#
+node_modulus/
+docker/package-lock.json

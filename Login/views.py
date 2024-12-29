@@ -15,6 +15,7 @@ def login_user(request):
         data = json.loads(request.body)
         username = data.get('username')
         password = data.get('password')
+        print(username,password)
 
         validate_data = functions.validate(username=username, password=password, api_type="LOGIN")
         if validate_data is not None:

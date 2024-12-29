@@ -8,7 +8,6 @@ from django.http import JsonResponse
 from predine.constants import status_code, status_message
 import re
 
-
 def verification_email(email, otp):
     print(otp, email)
 
@@ -173,3 +172,4 @@ def get_restaurant_img(self, filename):
 
 def get_dish_img(self, filename):
     return "DISH_{0}/{1}".format(self.name, filename)
+
