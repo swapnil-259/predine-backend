@@ -9,3 +9,5 @@ WORKDIR /predine_backend
 
 COPY requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt
+RUN mkdir -p /var/log/gunicorn
+

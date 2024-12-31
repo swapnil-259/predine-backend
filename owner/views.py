@@ -9,6 +9,7 @@ import secret
 import time 
 import threading
 from user.models import OrderDetails,OrderDishDetails,OrderLogs
+from django.utils import timezone
 
 def order_cancelled_no_payment(order_id):
     print("fucntion calledddddd")
@@ -301,6 +302,13 @@ def accept_order(request):
         order = OrderDetails.objects.filter(order_id=order_id,deleted_status=False).first()
         if order is None:
             return JsonResponse({'msg':'No orderId Found'},status=status_code.BAD_REQUEST)
+        created_time = order.created_time  
+        current_time = timezone.now()
+        time_difference = current_time - created_time
+        order_time = order.order_time  
+        updated_order_time = order_time + time_difference
+        order.order_time = updated_order_time
+        order.save()
 
 
         level_1_log = OrderLogs.objects.get(order=order, level=1)

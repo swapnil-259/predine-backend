@@ -16,20 +16,17 @@ def chef_orders(request):
         parent="Success", child__parent="PAYMENT STATUS"
     ).first()
 
-    # Get restaurants associated with the chef
     chef_restaurants = ChefRestaurantMapping.objects.filter(
         chef__user_id=request.user
     ).values_list("restaurant", flat=True)
 
-    # Fetch orders that are approved and have successful payments
     approved_orders = OrderLogs.objects.filter(
         level=1,
         order_status=order_approved_status,
         order__payment_status=payment_success_status,
         order__restaurant__in=chef_restaurants,
-    ).select_related("order")
+    ).select_related("order").order_by('-order__created_time')
 
-    # Filter orders for those that have a level 2 log entry
     chef_orders = approved_orders.filter(order__orderlogs__level=2)
 
     orders_data = []
@@ -37,10 +34,8 @@ def chef_orders(request):
         order_details = log.order
         print(order_details)
 
-        # Get the level 2 status for order_status
         level_2_status = OrderLogs.objects.filter(order=order_details, level=2).first()
 
-        # Get the level 3 status for receiver_status
         level_3_status = OrderLogs.objects.filter(order=order_details, level=3).first()
         print(level_3_status)
 
@@ -49,13 +44,13 @@ def chef_orders(request):
                 "order_id": order_details.order_id,
                 "total_amount": order_details.total_amount,
                 "order_time": (
-                    order_details.order_time.isoformat()
-                    if order_details.order_time
+                    order_details.created_time.isoformat()
+                    if order_details.created_time
                     else None
                 ),
                 "order_receiving_time": (
-                    order_details.created_time.isoformat()
-                    if order_details.created_time
+                    order_details.order_time.isoformat()
+                    if order_details.order_time
                     else None
                 ),
                 "restaurant": (
@@ -148,7 +143,7 @@ def receive_order(request):
         order_log = OrderLogs.objects.filter(order=order, level=3).first()
         if order_log:
             order_log.order_status = Dropdown.objects.filter(
-                parent="Received", child__parent="CUSTOMER STATUS"
+                parent="Recieved", child__parent="CUSTOMER STATUS"
             ).first()
             order_log.save()
             return JsonResponse(

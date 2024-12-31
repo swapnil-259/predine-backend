@@ -14,7 +14,7 @@ from django.shortcuts import render
 import time
 # from predine.constants.functions import order_cancelled_no_owner_response
 import threading
-
+from django.utils import timezone
 def order_cancelled_no_owner_response(order_id):
     print("fucntion calledddddd")
     if order_id is None:
@@ -107,7 +107,7 @@ def place_order(request):
             payment_status=Dropdown.objects.filter(
                 child__parent="PAYMENT STATUS", parent="Pending", deleted_status=False
             ).first(),
-            total_amount=1,
+            total_amount=total_price,
             order_time=selected_time,
             restaurant_id=restaurant_id,
         )
@@ -243,6 +243,7 @@ def create_order(request):
 
         return JsonResponse(
             {
+                "msg": "Order created successfully",
                 "razorpayOrderId": razorpay_order["id"],
                 "amount": order.total_amount,
                 "currency": "INR",
@@ -275,12 +276,18 @@ def confirm_payment(request):
         print(result)
 
         if result:
-            order = OrderDetails.objects.get(razorpay_order_id=razorpay_order_id)
+            order = OrderDetails.objects.filter(razorpay_order_id=razorpay_order_id).first()
             order.payment_status = Dropdown.objects.filter(
                 parent="Success", child__parent="PAYMENT STATUS"
             ).first()
             order.payment_id = razorpay_payment_id
             order.payment_signature = razorpay_signature
+            updated_time = order.updated_time 
+            current_time = timezone.now()
+            time_difference = current_time - updated_time
+            order_time = order.order_time 
+            updated_order_time = order_time + time_difference
+            order.order_time = updated_order_time
             order.save()
             OrderLogs.objects.create(
                 order=order,
@@ -289,11 +296,10 @@ def confirm_payment(request):
                     parent="Preparing", child__parent="FOOD STATUS"
                 ).first(),
             )
-
-            return JsonResponse({"message": "Payment successful"})
+            return JsonResponse({"msg": "Payment successful"})
         else:
             return JsonResponse(
-                {"error": "Signature verification failed"},
+                {"msg": "Signature verification failed"},
                 status=status_code.BAD_REQUEST,
             )
     else:

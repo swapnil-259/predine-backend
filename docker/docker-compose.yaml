@@ -28,7 +28,7 @@ services:
     ports:
       - "8002:8000"
     restart: always
-    command: /bin/sh -c "while ! nc -z predinemysql 3306; do sleep 1; done; python manage.py runserver 0.0.0.0:8000 && while sleep 1000; do :; done"
+    command: /bin/sh -c "while ! nc -z predinemysql 3306; do sleep 1; done; gunicorn --config predine/config/gunicorn.conf.py predine.wsgi:application"
     depends_on:
       - predine_mysql
     volumes:
