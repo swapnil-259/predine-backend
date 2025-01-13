@@ -4,6 +4,7 @@ from chef import views
 urlpatterns = [
     path('chef_orders/', views.chef_orders),
     path('order_completed/',views.complete_order),
-    path('order_recieved/',views.receive_order)
+    path('order_recieved/',views.receive_order),
+    path('manage-orders/',views.manage_orders),
 
 ]

@@ -50,6 +50,6 @@ def check_role(req_path, role):
             if req_path in path.CHEF_ROLE:
                 return True
         case "OWNER-CHEF":
-            if req_path in path.CHEF_ROLE:
+            if req_path in path.OWNER_CHEF_ROLE:
                 return True
             return False

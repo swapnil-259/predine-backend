@@ -18,4 +18,5 @@ urlpatterns = [
     path("orders/accept/", views.accept_order),
     path("orders/reject/", views.reject_order),
     path("orders/cancel/", views.cancel_dish),
+    path("timings/", views.get_timings),
 ]

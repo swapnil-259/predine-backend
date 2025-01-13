@@ -3,10 +3,9 @@ import json
 from django.db.models import Q
 from django.http import JsonResponse
 
-from owner.models import ChefRestaurantMapping, UserRole
-from predine.constants import request_handlers, status_code
-from user.models import Dropdown, OrderDetails, OrderLogs
-
+from owner.models import ChefRestaurantMapping, UserRole,OwnerDetails
+from predine.constants import request_handlers, status_code,status_message
+from user.models import Dropdown, OrderDetails, OrderLogs,OrderDishDetails
 
 def chef_orders(request):
     order_approved_status = Dropdown.objects.filter(
@@ -30,6 +29,7 @@ def chef_orders(request):
     chef_orders = approved_orders.filter(order__orderlogs__level=2)
 
     orders_data = []
+
     for log in chef_orders:
         order_details = log.order
         print(order_details)
@@ -157,3 +157,64 @@ def receive_order(request):
     return JsonResponse(
         {"msg": "Invalid request method"}, status=status_code.METHOD_NOT_ALLWOED
     )
+
+
+def manage_orders(request):
+    if request_handlers.request_type(request, "GET"):
+        restaurant = OwnerDetails.objects.filter(owner=request.user, deleted_status=False).first()
+        order_data = OrderDetails.objects.filter(restaurant=restaurant, deleted_status=False)
+
+        orders = []
+        for order in order_data:
+            owner_order_log = (
+                OrderLogs.objects.filter(order=order, level=1)
+                .order_by('-created_time')
+                .first()
+            )
+
+            chef_order_log = (
+                OrderLogs.objects.filter(order=order, level=2).order_by('-created_time').first()
+            )
+
+            receiver_status_log = (
+                OrderLogs.objects.filter(order=order, level=3)
+                .order_by('-created_time')
+                .first()
+            )
+
+
+
+            if not owner_order_log:
+                continue
+            
+            dish_details = OrderDishDetails.objects.filter(order=order,cancel=False)
+            dishes = [
+                {
+                    'dish_id': dish_detail.dish.id,
+                    'dish_name': dish_detail.dish.name,
+                    'quantity': dish_detail.quantity,
+                    'amount': dish_detail.amount,
+                    'id': dish_detail.id,
+                }
+                for dish_detail in dish_details
+            ]
+
+            orders.append({
+                'order_id': order.order_id,
+                'order_status': owner_order_log.order_status.parent if owner_order_log.order_status else None,
+                'payment_status': order.payment_status.parent if order.payment_status else None,
+                'food_status': chef_order_log.order_status.parent if chef_order_log and chef_order_log.order_status else None, 
+                'payment_id': order.payment_id if order.payment_status and order.payment_status.parent == 'Success' else None,
+                'total_amount': order.total_amount,
+                'order_time': order.created_time.isoformat() if order.created_time else None,
+                'order_receiving_time': order.order_time.isoformat() if order.order_time else None,
+                'dishes': dishes,
+                'receiver_status': receiver_status_log.order_status.parent if receiver_status_log and receiver_status_log.order_status else None, 
+            })
+
+        return JsonResponse({'data': orders}, status=200)
+
+    else:
+        return JsonResponse({'msg': status_message.METHOD_NOT_ALLOWED}, status=status_code.METHOD_NOT_ALLWOED)
+
+       

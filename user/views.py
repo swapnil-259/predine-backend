@@ -107,7 +107,7 @@ def place_order(request):
             payment_status=Dropdown.objects.filter(
                 child__parent="PAYMENT STATUS", parent="Pending", deleted_status=False
             ).first(),
-            total_amount=total_price,
+            total_amount=1,
             order_time=selected_time,
             restaurant_id=restaurant_id,
         )
@@ -145,7 +145,7 @@ def place_order(request):
 
 def get_user_orders(request):
     if request_handlers.request_type(request, "GET"):
-        orders = OrderDetails.objects.filter(user=request.user)
+        orders = OrderDetails.objects.filter(user=request.user).order_by('-created_time')
 
         orders_summary = []
         for order in orders:

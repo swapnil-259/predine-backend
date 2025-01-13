@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from predine.constants import request_handlers, status_code, status_message, functions
+from predine.constants import request_handlers, status_code, status_message, functions,timings
 from execution.models import OwnerDetails
 from Login.models import Dropdown,UserRole,User,Roles
 from django.http import JsonResponse
@@ -120,7 +120,7 @@ def add_dish(request):
 def get_dish_type(request):
     if request_handlers.request_type(request, 'GET'):
         data = Dropdown.objects.filter(
-            child=Dropdown.objects.filter(parent="DISH CATEGORY").first()
+            child=Dropdown.objects.filter(parent="DISH CATEGORY").first(),deleted_status=False
         ).values('parent', 'id')
         transformed_data = [{'label': item['parent'],
                              'value': item['id']} for item in data]
@@ -373,3 +373,8 @@ def cancel_dish(request):
             {"msg": status_message.METHOD_NOT_ALLOWED},
             status=status_code.METHOD_NOT_ALLWOED,
         )
+
+
+def get_timings(request):
+    if request_handlers.request_type(request, 'GET'):
+        return JsonResponse({'data': {'opening_time': timings.RESTAURNT_START_TIME, 'closing_time': timings.RESTAURNT_END_TIME}}, status=status_code.SUCCESS)
