@@ -70,7 +70,6 @@ def get_user_data(request):
 
 def get_menu(request):
     if request_handlers.request_type(request, "GET"):
-        print("kjhg", request.GET.get("data"))
         menu_data = Dish.objects.filter(
             restaurant=request.GET.get("data"), deleted_status=False
         ).values(
@@ -107,7 +106,7 @@ def place_order(request):
             payment_status=Dropdown.objects.filter(
                 child__parent="PAYMENT STATUS", parent="Pending", deleted_status=False
             ).first(),
-            total_amount=1,
+            total_amount=total_price,
             order_time=selected_time,
             restaurant_id=restaurant_id,
         )

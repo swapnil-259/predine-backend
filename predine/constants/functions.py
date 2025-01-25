@@ -38,7 +38,7 @@ def otp_expire(email, otp):
 
 
 def validate(first_name=None, last_name=None, email=None, phone_number=None, restaurant_name=None, address=None, password=None, confirm_password=None, role=None, type=None, api_type=None, username=None, otp=None, parent=None, child=None):
-    mobile_pattern = r'^[789]\d{9}$'
+    mobile_pattern = r'^[6789]\d{9}$'
     email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     response = {'msg': '', 'status': False, 'other': False}
     match api_type:

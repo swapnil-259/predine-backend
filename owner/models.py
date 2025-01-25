@@ -9,7 +9,7 @@ class Dish(BaseModel):
         OwnerDetails, on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=80, null=True)
     description = models.TextField(null=False)
-    price = models.PositiveIntegerField(null=False)
+    price = models.FloatField(null=False)
     category = models.ForeignKey(
         Dropdown, on_delete=models.SET_NULL, null=True)
     image = models.FileField(upload_to=functions.get_dish_img, null=False)
