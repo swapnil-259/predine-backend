@@ -19,4 +19,5 @@ urlpatterns = [
     path("orders/reject/", views.reject_order),
     path("orders/cancel/", views.cancel_dish),
     path("timings/", views.get_timings),
+    path("statistics/", views.owner_statistics),
 ]

@@ -6,14 +6,10 @@ from predine.constants import path, status_code, status_message
 def authentication(get_response):
     def check_authentication(request):
         req_path = request.path
-        print("req", req_path, request.user)
         if req_path in path.AUTHENTICATED_PATH:
-            print("hello")
             if request.user.is_authenticated:
-                print(request.session["role"], request.session["role_name"])
                 response = get_response(request)
                 role_res = check_role(req_path, request.session["role_name"])
-                print(role_res)
 
                 if role_res:
                     return response
