@@ -34,6 +34,11 @@ AUTHENTICATED_PATH = [
     "/chef/chef_orders/",
     "/chef/order_completed/",
     "/chef/order_recieved/",
+    "/common/get_child_values/",
+    "/onwer/timings/",
+    "/owner/statistics/",
+    "/chef/manage-orders/",
+    "/owner/restaurant-status-update/",
 ]
 ADMIN_ROLE = [
     "/noauth/left_panel/",
@@ -46,6 +51,7 @@ ADMIN_ROLE = [
     "/common/parent_list/",
     "/common/add_child/",
     "/common/get_child/",
+    "/common/get_child_values/",
 ]
 OWNER_ROLE = [
     "/noauth/left_panel/",
@@ -71,6 +77,8 @@ OWNER_ROLE = [
     "/chef/order_recieved/",
     "/onwer/timings/",
     "/owner/statistics/",
+    "/owner/restaurant-status-update/",
+    "/common/get_child_values/",
 ]
 USER_ROLE = [
     "/noauth/left_panel/",
@@ -83,6 +91,7 @@ USER_ROLE = [
     "/user/create_order/",
     "/user/confirm_payment/",
     "/chef/order_recieved/",
+    "/common/get_child_values/",
 ]
 CHEF_ROLE = [
     "/noauth/left_panel/",
@@ -91,6 +100,7 @@ CHEF_ROLE = [
     "/chef/order_completed/",
     "/chef/order_recieved/",
     "/onwer/timings/",
+    "/common/get_child_values/",
 ]
 OWNER_CHEF_ROLE = [
     "/noauth/left_panel/",
@@ -119,5 +129,7 @@ OWNER_CHEF_ROLE = [
     "/chef/order_recieved/",
     "/chef/manage-orders/",
     "/onwer/timings/",
+    "/common/get_child_values/",
     "/owner/statistics/",
+    "/owner/restaurant-status-update/",
 ]

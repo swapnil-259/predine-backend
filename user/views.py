@@ -1,8 +1,15 @@
 import json
+
+# from predine.constants.functions import order_cancelled_no_owner_response
+import threading
+import time
 from urllib import request
 
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.utils import timezone
+
+import secret
 from execution.models import OwnerDetails
 from Login.models import Dropdown, User
 from owner.models import Dish, OwnerStatistics
@@ -10,12 +17,6 @@ from predine.algorithms.order_id import generate_unique_order_id
 from predine.constants import request_handlers, status_code, status_message
 from predine.constants.razorpay import razorpay_client
 from user.models import OrderDetails, OrderDishDetails, OrderLogs
-from django.shortcuts import render
-import time
-
-# from predine.constants.functions import order_cancelled_no_owner_response
-import threading
-from django.utils import timezone
 
 
 def order_cancelled_no_owner_response(order_id):
@@ -49,6 +50,7 @@ def get_all_restaurants(request):
             "address",
             "restaurant_type__parent",
             "restaurant_pic",
+            "is_open",
         )
         return JsonResponse({"data": list(restaurant_data)}, safe=False)
     else:
@@ -358,3 +360,75 @@ def request_account_deletion(request):
         return JsonResponse(
             {"message": "Your account deletion request has been submitted."}
         )
+
+
+def razorpay_webhook(request):
+    """Handles Razorpay webhook calls to update payment status."""
+    body_unicode = request.body.decode("utf-8")  # Convert bytes to string
+    data = json.loads(body_unicode)
+    event = data.get("event")
+
+    webhook_secret = secret.WEBHOOK_SECRET
+    signature = request.headers.get("X-Razorpay-Signature")
+    razorpay_client.utility.verify_webhook_signature(
+        request.body.decode("utf-8"), signature, webhook_secret
+    )
+
+    if event == "payment.captured":
+        payment_data = data["payload"]["payment"]["entity"]
+        razorpay_order_id = payment_data["order_id"]
+        razorpay_payment_id = payment_data["id"]
+        razorpay_signature = signature
+
+        order = OrderDetails.objects.filter(razorpay_order_id=razorpay_order_id).first()
+        if order:
+            order.payment_status = Dropdown.objects.filter(
+                parent="Success", child__parent="PAYMENT STATUS"
+            ).first()
+
+            order.payment_id = razorpay_payment_id
+            order.payment_signature = razorpay_signature
+            updated_time = order.updated_time
+            current_time = timezone.now()
+            time_difference = current_time - updated_time
+            order_time = order.order_time
+            updated_order_time = order_time + time_difference
+            order.order_time = updated_order_time
+            order.save()
+
+            OrderLogs.objects.create(
+                order=order,
+                level=2,
+                order_status=Dropdown.objects.filter(
+                    parent="Preparing", child__parent="FOOD STATUS"
+                ).first(),
+            )
+            owner = order.restaurant  # Assuming order has an owner field
+            today_date = timezone.now().date()
+            owner_statistics, created = OwnerStatistics.objects.get_or_create(
+                owner=owner,
+                date=today_date,
+                defaults={"total_orders": 0, "total_revenue": 0},
+            )
+
+            if not created:
+                owner_statistics.total_orders += 1
+                owner_statistics.total_revenue += order.total_amount
+                owner_statistics.save()
+
+            return JsonResponse({"msg": "Payment updated successfully"}, status=200)
+
+    elif event == "payment.failed":
+        payment_data = data["payload"]["payment"]["entity"]
+        razorpay_order_id = payment_data["order_id"]
+
+        order = OrderDetails.objects.filter(razorpay_order_id=razorpay_order_id).first()
+
+        if order:
+            order.payment_status = Dropdown.objects.filter(
+                parent="Failed", child__parent="PAYMENT STATUS"
+            ).first()
+            order.save()
+            return JsonResponse({"msg": "Payment failed updated"}, status=200)
+
+    return JsonResponse({"msg": "Event ignored"}, status=400)

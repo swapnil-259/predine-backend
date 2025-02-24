@@ -1,20 +1,17 @@
-from predine.constants import (
-    request_handlers,
-    status_code,
-    status_message,
-    timings,
-)
-from execution.models import OwnerDetails
-from Login.models import Dropdown, UserRole, User, Roles
-from django.http import JsonResponse
 import json
-from owner.models import ChefRestaurantMapping, Dish, OwnerStatistics
-import secret
-import time
 import threading
-from user.models import OrderDetails, OrderDishDetails, OrderLogs
-from django.utils import timezone
+import time
 from datetime import datetime
+
+from django.http import JsonResponse
+from django.utils import timezone
+
+import secret
+from execution.models import OwnerDetails
+from Login.models import Dropdown, Roles, User, UserRole
+from owner.models import ChefRestaurantMapping, Dish, OwnerStatistics
+from predine.constants import request_handlers, status_code, status_message, timings
+from user.models import OrderDetails, OrderDishDetails, OrderLogs
 
 
 def order_cancelled_no_payment(order_id):
@@ -530,3 +527,32 @@ def owner_statistics(request):
             "total_revenue": total_revenue,
         }
         return JsonResponse({"data": response_data}, status=status_code.SUCCESS)
+
+
+def restaurant_on_and_off(request):
+    if request_handlers.request_type(request, "POST"):
+        data = json.loads(request.body)
+        print(data)
+        restaurant = OwnerDetails.objects.filter(owner=request.user).first()
+        if restaurant is None:
+            return JsonResponse(
+                {"msg": "No restaurant found"}, status=status_code.BAD_REQUEST
+            )
+        restaurant.is_open = data.get("status")
+        restaurant.save()
+        return JsonResponse(
+            {"msg": "Restaurant status updated successfully"},
+            status=status_code.SUCCESS,
+        )
+    elif request_handlers.request_type(request, "GET"):
+        restaurant = OwnerDetails.objects.filter(owner=request.user).first()
+        if restaurant is None:
+            return JsonResponse(
+                {"msg": "No restaurant found"}, status=status_code.BAD_REQUEST
+            )
+        return JsonResponse({"status": restaurant.is_open}, status=status_code.SUCCESS)
+    else:
+        return JsonResponse(
+            {"msg": status_message.METHOD_NOT_ALLOWED},
+            status=status_code.METHOD_NOT_ALLWOED,
+        )

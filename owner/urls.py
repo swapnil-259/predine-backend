@@ -20,4 +20,5 @@ urlpatterns = [
     path("orders/cancel/", views.cancel_dish),
     path("timings/", views.get_timings),
     path("statistics/", views.owner_statistics),
+    path("restaurant-status-update/", views.restaurant_on_and_off),
 ]

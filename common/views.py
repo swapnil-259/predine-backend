@@ -1,10 +1,11 @@
-from django.shortcuts import render
-from predine.constants import request_handlers, status_code, status_message, functions
-from Login.models import RoleDropdownMapping, Dropdown, User
-from django.http import JsonResponse
 import json
-from django.contrib.auth.hashers import check_password
-from django.contrib.auth.hashers import make_password
+
+from django.contrib.auth.hashers import check_password, make_password
+from django.http import JsonResponse
+from django.shortcuts import render
+
+from Login.models import Dropdown, RoleDropdownMapping
+from predine.constants import functions, request_handlers, status_code, status_message
 
 # Create your views here.
 
@@ -116,3 +117,25 @@ def change_password(request):
         {"msg": status_message.METHOD_NOT_ALLOWED},
         status=status_code.METHOD_NOT_ALLWOED,
     )
+
+
+def get_child_values(request):
+    if request_handlers.request_type(request, "GET"):
+        parent = request.GET.get("parent")
+        if not parent:
+            return JsonResponse(
+                {"msg": status_message.PARENT_NOT_FOUND}, status=status_code.BAD_REQUEST
+            )
+        parent_exist = Dropdown.objects.filter(parent=parent, child=None).first()
+        if parent_exist is None:
+            return JsonResponse(
+                {"msg": status_message.PARENT_NOT_FOUND}, status=status_code.BAD_REQUEST
+            )
+        child_data = Dropdown.objects.filter(
+            child=Dropdown.objects.filter(id=parent_exist.id).first(),
+            deleted_status=False,
+        ).values("parent", "id")
+        transformed_data = [
+            {"label": item["parent"], "value": item["id"]} for item in child_data
+        ]
+        return JsonResponse({"data": transformed_data}, status=status_code.SUCCESS)
